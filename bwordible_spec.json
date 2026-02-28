@@ -1,0 +1,101 @@
+{
+  "app": {
+    "name": "bwordible",
+    "type": "wordle_like",
+    "theme": "bible"
+  },
+  "timezone": {
+    "daily_rollover_timezone": "America/New_York",
+    "daily_rollover_rule": "Use the local calendar date in America/New_York. The daily puzzle changes at midnight America/New_York."
+  },
+  "gameplay": {
+    "answer_length_letters": {
+      "min": 4,
+      "max": 6,
+      "varies_by_day": true,
+      "display_template": "{L} letters"
+    },
+    "max_guesses": {
+      "rule": "L + 1",
+      "by_length": {
+        "4": 5,
+        "5": 6,
+        "6": 7
+      },
+      "display_template": "{G} guesses"
+    },
+    "board": {
+      "total_columns": 6,
+      "blocked_tiles_on_left": "6 - L",
+      "blocked_tiles_behavior": "Always black/inert. Player only enters letters in the last L tiles of each row."
+    },
+    "scoring": {
+      "method": "standard_wordle",
+      "repeat_letter_handling": "Use answer letter-counts: assign greens first, then assign yellows only while remaining counts > 0."
+    },
+    "basic_rules_guidance": {
+      "answers_are_bible_themed": "Possible answers are Bible-themed and include names, places, key concepts, and common words that appear in the Bible.",
+      "allowed_characters": "Letters A\u2013Z only (no hyphens, apostrophes, spaces, or diacritics).",
+      "plurals_and_inflections_allowed": true,
+      "plurals_evidence_examples_in_answer_list": [
+        "ANGELS",
+        "KINGS",
+        "TRIBES",
+        "WATERS",
+        "PSALMS",
+        "EYES",
+        "HANDS"
+      ],
+      "note_on_s_ending_words": "Some answers end in 'S' because they are plural/inflected forms (e.g., ANGELS, KINGS) and some are proper names/books (e.g., MOSES, JESUS, AMOS, ACTS). Do not assume answers are always singular."
+    },
+    "ui_required_display": {
+      "show_length_and_guess_count": "Always show: '{L} letters \u2022 {G} guesses' for the current puzzle."
+    }
+  },
+  "wordlists": {
+    "answers": {
+      "file": "answers_4to6.json",
+      "format": "array<object> with keys {word, length, bucket}",
+      "count_total": 427,
+      "count_by_length": {
+        "5": 150,
+        "4": 143,
+        "6": 134
+      },
+      "sha256": "4fcb7f1b232da4a4103c841c107cb06ea89ef61b262747142402c6108df9b236"
+    },
+    "allowed_guesses": {
+      "mode": "normal",
+      "definition": "Allowed guesses = answers + general English words (A\u2013Z only) of length 4\u20136 from dwyl/english-words words_alpha.txt.",
+      "file": "allowed_guesses_4to6.json",
+      "count_total": 53009,
+      "count_by_length": {
+        "6": 29886,
+        "5": 15930,
+        "4": 7193
+      },
+      "sources": [
+        {
+          "name": "dwyl/english-words words_alpha.txt",
+          "url": "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt",
+          "filter": "keep only [A\u2013Z]{4,6}, uppercase"
+        }
+      ]
+    }
+  },
+  "daily_selection": {
+    "goal": "Quasi-random daily puzzle with no repeats until the list is exhausted.",
+    "start_date_local": "2026-03-01",
+    "date_basis": "America/New_York local date",
+    "algorithm": [
+      "Let N = number of answers.",
+      "Compute dayIndex = days_between(start_date_local and today's local date in America/New_York). Clamp to >= 0.",
+      "cycle = floor(dayIndex / N), i = dayIndex % N.",
+      "Create a deterministic permutation permCycle of [0..N-1] using Fisher\u2013Yates with PRNG seeded by hash32(BASE_SEED + ':' + cycle).",
+      "answerIndex = permCycle[i], answer = answers[answerIndex].word.",
+      "This guarantees no repeats for N days, then reshuffles next cycle."
+    ],
+    "base_seed": "bwordible-v1",
+    "prng_reference": "xmur3 (string->uint32) + mulberry32 (uint32->rng) or equivalent deterministic PRNG"
+  }
+}

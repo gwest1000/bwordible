@@ -1,0 +1,2137 @@
+[
+  {
+    "word": "AARON",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ABLE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ABNER",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ABRAM",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ACTS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ADAM",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "AFRAID",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "AHAB",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "ALIVE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ALONE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ALTAR",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "AMALEK",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "AMEN",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "AMMON",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "AMOS",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "ANGEL",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ANGELS",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "ANGER",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ANGRY",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ANIMAL",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ANSWER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ANYONE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ARISE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ARMIES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ARMY",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ARNON",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "AROSE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ASHDOD",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "ASIA",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "ASKED",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "AWAY",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BAAL",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "BALAAM",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "BASHAN",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "BATTLE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BEAR",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BECAME",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BECOME",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BEGAN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BEHOLD",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BETH",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BETHEL",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "BETTER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BEYOND",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BLESS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BLOOD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BODY",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BOOK",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BORDER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BORE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BORN",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BRASS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BREAD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BREAK",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BROKEN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BUILD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BUILT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BULL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BURIED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BURN",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BURNED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "BURNT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CALL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CALLED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CAMP",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CANAAN",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "CARMEL",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "CARRY",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CAST",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CAUSE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CHERUB",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "CHIEF",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CHILD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CHOSEN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CHRIST",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CITIES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CITY",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CLEAN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CLOUD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "COMES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "COMING",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "COURT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CRIED",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CROSS",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "CROWN",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "CUBITS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "CURSE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DANIEL",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "DAVID",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "DAYS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DEAD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DEATH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DEMON",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "DEPART",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DESIRE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DEVIL",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "DIED",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DOOR",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DRINK",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DUST",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "DWELL",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EARS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EARTH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EAST",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EDEN",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "EDOM",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "EGYPT",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "EKRON",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ELAM",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "ELDERS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ELIJAH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "ELISHA",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "ENEMY",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ENTER",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EPHAH",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "EPHOD",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ESAU",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "ESTHER",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "EVIL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EXODUS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EYES",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "EZRA",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "FACE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FAITH",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "FALL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FAMILY",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FAMINE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FATHER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FAVOR",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FEAR",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FEAST",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FEET",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FELL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FIELD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FIFTY",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FIGHT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FILLED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FIND",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FINE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FIRE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FIRST",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FIVE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FLED",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FLEE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FLESH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FLOCK",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FOOD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FORTY",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FOUR",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "FRUIT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GATE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GATES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GATH",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "GATHER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GAZA",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "GIBEAH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "GIBEON",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "GILEAD",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "GILGAL",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "GIVES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GLORY",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "GODS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GOING",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GOLD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GOSPEL",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "GRACE",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "GRAIN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "GROUND",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HALF",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HAMAN",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "HAMATH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "HAND",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HANDS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HAPPEN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HEAD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HEADS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HEART",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HEARTS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HEAVEN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HEBRON",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "HELP",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HIDDEN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HIGH",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HILL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HOLD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HOLY",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HONOR",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HOPE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HORSES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HOSEA",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HOUSE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "HOUSES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "IDOLS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "INDEED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ISAAC",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ISAIAH",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ISRAEL",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "JACOB",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "JAMES",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "JEHU",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "JESHUA",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "JESUS",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "JEWS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "JOAB",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "JOEL",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "JOHN",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "JOPPA",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "JORDAN",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "JOSEPH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "JOSHUA",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "JOSIAH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "JUDAH",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "JUDE",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "JUDGE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "JUDGES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "KILL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "KILLED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "KING",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "KINGS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LABAN",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "LABOR",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LAID",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LAMB",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LAND",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LEAVE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LEFT",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LEST",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LEVI",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "LIES",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIFE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIFTED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIGHT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LINEN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIPS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LISTEN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIVE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIVED",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIVES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LIVING",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LOOK",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LOOKED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LORD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LOVE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LOVING",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "LUKE",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "MAKES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MALE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MARK",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "MARY",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "MASTER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MEAL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MEET",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MERCY",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "MICAH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MIDIAN",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "MIDST",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MIGHTY",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MIZPAH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "MIZPEH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "MOAB",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "MONEY",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MONTH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MOSES",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "MOTHER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MOUNT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MOUTH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "MYSELF",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NAME",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NATION",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NEWS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NEXT",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NIGHT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NOAH",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "NONE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NORTH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "NUMBER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "OFFER",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ONES",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "OPEN",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "OPENED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PASS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PASSED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PAUL",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "PEACE",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "PEOPLE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PERISH",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PERSIA",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "PETER",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "PIECES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PILATE",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "PLACE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PLACES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PLEASE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "POOR",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "POWER",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PRAISE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PRAY",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PRAYER",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "PRIEST",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PRINCE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "PSALM",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "PSALMS",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "PURE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "RAIN",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "RAISED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "RAMAH",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "REIGN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "REST",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "RETURN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "REUBEN",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "RISE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "RIVER",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ROCK",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ROMANS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ROME",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "ROSE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "RUTH",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "SAKE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SAMUEL",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "SAUL",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "SAVE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SAVED",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SECOND",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SEED",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SEEK",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SEIR",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "SEND",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SENT",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SERVE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SEVEN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SHEBA",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "SHEEP",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SHILOH",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "SHOW",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SIDE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SIDON",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "SIGHT",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SILVER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SIMEON",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "SIMON",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "SINAI",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "SING",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SINNED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SINS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SISTER",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SLAIN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SODOM",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "SONG",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SONS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SOUGHT",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SOUL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SOUND",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SOUTH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SPIRIT",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SPOKEN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SPREAD",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STAND",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STILL",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STONE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STONES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STOOD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STRIKE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STRONG",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "STRUCK",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SURELY",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SWORD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "SYRIA",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "TAMAR",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "TEACH",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TEMPLE",
+    "length": 6,
+    "bucket": "core"
+  },
+  {
+    "word": "TENT",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THANKS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THING",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THINGS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THIRD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THIRTY",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THOUGH",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THREE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "THRONE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TIME",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TIMES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TITHE",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "TONGUE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TOWARD",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TREE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TREES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TRIBE",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "TRIBES",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TRUTH",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "TURN",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TURNED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TWELVE",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TWENTY",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "TYRE",
+    "length": 4,
+    "bucket": "core"
+  },
+  {
+    "word": "VALLEY",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "VOICE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WAIT",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WALK",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WALKED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WALL",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WATER",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WATERS",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WAYS",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WHOLE",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WICKED",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WIFE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WIND",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WINE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WISDOM",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WISE",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WITHIN",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WIVES",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WOMAN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WOMEN",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WOOD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WORD",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WORDS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WORK",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WORKS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WORLD",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "WRATH",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "YAHWEH",
+    "length": 6,
+    "bucket": "vocab"
+  },
+  {
+    "word": "YEAR",
+    "length": 4,
+    "bucket": "vocab"
+  },
+  {
+    "word": "YEARS",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "YOUNG",
+    "length": 5,
+    "bucket": "vocab"
+  },
+  {
+    "word": "ZADOK",
+    "length": 5,
+    "bucket": "core"
+  },
+  {
+    "word": "ZION",
+    "length": 4,
+    "bucket": "core"
+  }
+]

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BwordIBLE</title>
+    <meta
+      name="description"
+      content="BwordIBLE is a Bible-themed daily word puzzle with 4 to 6 letter answers."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div class="background-glow background-glow-left" aria-hidden="true"></div>
+    <div class="background-glow background-glow-right" aria-hidden="true"></div>
+
+    <div class="app-shell">
+      <header class="hero reveal reveal-1">
+        <div class="hero-copy">
+          <p class="eyebrow">Daily Bible-themed word puzzle</p>
+          <h1>BwordIBLE</h1>
+          <p class="hero-text">
+            Search the Scriptures in six columns. Each day brings a new 4, 5, or
+            6 letter answer, with an archive for released puzzles and a live
+            streak calendar.
+          </p>
+        </div>
+
+        <div class="hero-actions">
+          <button id="helpButton" class="ghost-button" type="button">How to play</button>
+          <button id="statsButton" class="ghost-button" type="button">Stats</button>
+          <button id="archiveButton" class="ghost-button" type="button">Archive</button>
+          <button id="shareButton" class="primary-button" type="button">Share</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="game-panel reveal reveal-2">
+          <div class="status-ribbon">
+            <div>
+              <p id="puzzleLabel" class="label">Today’s puzzle</p>
+              <p id="puzzleDate" class="ribbon-value" data-testid="puzzle-date">Loading...</p>
+            </div>
+            <div>
+              <p class="label">Board</p>
+              <p id="puzzleMeta" class="ribbon-value" data-testid="puzzle-meta">-</p>
+            </div>
+            <div>
+              <p class="label">Mode</p>
+              <p id="modeValue" class="ribbon-value" data-testid="mode-value">-</p>
+            </div>
+            <div>
+              <p class="label">Next refresh</p>
+              <p id="countdown" class="ribbon-value">-</p>
+            </div>
+          </div>
+
+          <div id="noticeBanner" class="notice-banner" hidden>
+            <div>
+              <p class="label">Notice</p>
+              <p id="noticeText" class="notice-copy"></p>
+            </div>
+            <button id="returnTodayButton" class="ghost-button" type="button" hidden>
+              Return to today
+            </button>
+          </div>
+
+          <div
+            id="statusBanner"
+            class="status-banner"
+            data-tone="calm"
+            data-testid="status-banner"
+            role="status"
+            aria-live="polite"
+          >
+            Loading puzzle data...
+          </div>
+
+          <section class="board-card" aria-label="Game board">
+            <div id="board" class="board" data-testid="board" aria-live="polite"></div>
+          </section>
+
+          <section class="keyboard-card" aria-label="On-screen keyboard">
+            <div id="keyboard" class="keyboard"></div>
+          </section>
+        </section>
+
+        <aside class="info-panel">
+          <section class="info-card reveal reveal-3">
+            <p class="label">Focus</p>
+            <h2>Find the word hidden in the text</h2>
+            <p>
+              Answers draw from names, places, books, and common Bible language.
+              Guess in the puzzle’s current length only, and use the archive to
+              revisit released days without affecting streak stats.
+            </p>
+          </section>
+
+          <section class="info-card stat-grid reveal reveal-4">
+            <div>
+              <p class="label">Answer pool</p>
+              <p id="answerCount" class="big-stat">427</p>
+            </div>
+            <div>
+              <p class="label">Allowed guesses</p>
+              <p id="guessCount" class="big-stat">53,009</p>
+            </div>
+            <div>
+              <p class="label">Current streak</p>
+              <p id="currentStreak" class="big-stat" data-testid="current-streak">0</p>
+            </div>
+            <div>
+              <p class="label">Win rate</p>
+              <p id="winRate" class="big-stat">0%</p>
+            </div>
+          </section>
+
+          <section class="info-card reveal reveal-5">
+            <div class="card-header">
+              <div>
+                <p class="label">Streak calendar</p>
+                <h2>Recent walk</h2>
+              </div>
+              <p id="calendarRangeLabel" class="mini-copy">Last 35 days</p>
+            </div>
+            <div id="streakCalendar" class="activity-calendar" data-testid="streak-calendar"></div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-swatch won"></span>Won</span>
+              <span class="legend-item"><span class="legend-swatch lost"></span>Lost</span>
+              <span class="legend-item"><span class="legend-swatch missed"></span>Missed</span>
+              <span class="legend-item"><span class="legend-swatch today"></span>Today</span>
+            </div>
+          </section>
+
+          <section class="info-card reveal reveal-6">
+            <div class="card-header">
+              <div>
+                <p class="label">Archive browser</p>
+                <h2>Released puzzles</h2>
+              </div>
+              <button id="archiveLaunchButton" class="ghost-button" type="button">Browse</button>
+            </div>
+            <p id="archiveSummary" class="archive-summary">
+              Released puzzles will appear here once live dates accumulate.
+            </p>
+          </section>
+
+          <section class="info-card info-list reveal reveal-7">
+            <div>
+              <p class="label">Daily rule</p>
+              <p>Midnight rollover in America/New_York.</p>
+            </div>
+            <div>
+              <p class="label">Guesses</p>
+              <p id="guessRule">Length + 1</p>
+            </div>
+            <div>
+              <p class="label">Input</p>
+              <p>Letters A-Z only. No spaces, punctuation, or accents.</p>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <dialog id="helpDialog" class="modal">
+      <form method="dialog" class="modal-card">
+        <div class="modal-header">
+          <div>
+            <p class="label">Guide</p>
+            <h2>How BwordIBLE works</h2>
+          </div>
+          <button class="ghost-button" type="submit">Close</button>
+        </div>
+
+        <div class="modal-body">
+          <p>
+            Each puzzle uses a 6-column board. If the answer is shorter, the left
+            tiles stay blocked and black.
+          </p>
+          <ul class="rules">
+            <li>4-letter answer: 5 guesses</li>
+            <li>5-letter answer: 6 guesses</li>
+            <li>6-letter answer: 7 guesses</li>
+            <li>Green means correct letter, correct spot.</li>
+            <li>Gold means correct letter, wrong spot.</li>
+            <li>Slate means the letter is not in the answer.</li>
+            <li>Archive puzzles save progress but do not change stats or streaks.</li>
+          </ul>
+          <p>
+            The daily rotation begins on March 1, 2026 and changes at midnight
+            America/New_York.
+          </p>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="statsDialog" class="modal">
+      <form method="dialog" class="modal-card">
+        <div class="modal-header">
+          <div>
+            <p class="label">Record</p>
+            <h2>Your stats</h2>
+          </div>
+          <button class="ghost-button" type="submit">Close</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="stats-overview">
+            <div>
+              <p class="label">Played</p>
+              <p id="statsPlayed" class="big-stat">0</p>
+            </div>
+            <div>
+              <p class="label">Wins</p>
+              <p id="statsWins" class="big-stat">0</p>
+            </div>
+            <div>
+              <p class="label">Best streak</p>
+              <p id="statsMaxStreak" class="big-stat">0</p>
+            </div>
+            <div>
+              <p class="label">Average solve</p>
+              <p id="statsAverage" class="big-stat">-</p>
+            </div>
+          </div>
+
+          <div>
+            <p class="label">Guess distribution</p>
+            <div id="distribution" class="distribution"></div>
+          </div>
+
+          <div>
+            <div class="card-header">
+              <div>
+                <p class="label">Calendar</p>
+                <h2>Streak map</h2>
+              </div>
+              <p id="statsCalendarRangeLabel" class="mini-copy">Last 35 days</p>
+            </div>
+            <div id="statsCalendar" class="activity-calendar stats-calendar"></div>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="archiveDialog" class="modal archive-modal">
+      <form method="dialog" class="modal-card archive-card">
+        <div class="modal-header archive-header">
+          <div>
+            <p class="label">Archive</p>
+            <h2>Browse released puzzles</h2>
+          </div>
+          <div class="archive-header-actions">
+            <button id="archivePrevButton" class="ghost-button" type="button" aria-label="Previous month">
+              Prev
+            </button>
+            <p id="archiveMonthLabel" class="archive-month">-</p>
+            <button id="archiveNextButton" class="ghost-button" type="button" aria-label="Next month">
+              Next
+            </button>
+            <button class="ghost-button" type="submit">Close</button>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <p id="archiveEmptyState" class="archive-empty" hidden>
+            The archive opens once live daily puzzles accumulate.
+          </p>
+          <div id="archiveCalendar" class="archive-calendar" data-testid="archive-calendar"></div>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" hidden></div>
+  </body>
+</html>
