@@ -87,7 +87,7 @@ init().catch((error) => {
     window.location.protocol === "file:"
       ? " Open the folder through a local web server because browsers block JSON loading over file://."
       : "";
-  setStatus(`Unable to load the BwordIBLE data files.${localFileHint}`, "error");
+  setStatus(`Unable to load the bWORDibLE data files.${localFileHint}`, "error");
 });
 
 async function init() {
@@ -765,7 +765,7 @@ function buildShareText() {
     return `${left}${right}`;
   });
 
-  return [`BwordIBLE${modeLabel} ${puzzle.displayDate} ${result}`, ...lines].join("\n");
+  return [`bWORDibLE${modeLabel} ${puzzle.displayDate} ${result}`, ...lines].join("\n");
 }
 
 function getKeyboardStatuses() {

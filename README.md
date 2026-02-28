@@ -1,6 +1,6 @@
-# BwordIBLE
+# bWORDibLE
 
-BwordIBLE is a Bible-themed daily word puzzle with 4 to 6 letter answers.
+bWORDibLE is a Bible-themed daily word puzzle with 4 to 6 letter answers.
 
 ## Local development
 
