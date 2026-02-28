@@ -59,8 +59,10 @@ test("solves the ranked daily puzzle and persists stats", async ({ page }) => {
   await page.keyboard.type(puzzle.answer);
   await page.keyboard.press("Enter");
 
+  await expect(page.locator('[data-testid="board"] .tile.celebrate')).toHaveCount(puzzle.length);
   await expect(page.locator("#toast")).toContainText("Solved");
   await expect(page.getByTestId("current-streak")).toHaveText("1");
+  await expect(page.locator("#statsDialog")).not.toHaveJSProperty("open", true);
 
   const saved = await page.evaluate((storageKey) => {
     return JSON.parse(localStorage.getItem(storageKey));

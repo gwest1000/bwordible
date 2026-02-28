@@ -60,6 +60,7 @@ const appState = {
   save: loadSave(),
   simulatedTodayKey: null,
   toastTimer: null,
+  winAnimationTimer: null,
   todayKey: null,
 };
 
@@ -269,14 +270,12 @@ function submitGuess() {
     if (!puzzle.isPreview) {
       recordStats(progress.guesses.length);
     }
-    showToast(`Solved in ${progress.guesses.length}/${puzzle.maxGuesses}.`);
   } else if (progress.guesses.length >= puzzle.maxGuesses) {
     progress.completed = true;
     progress.won = false;
     if (!puzzle.isPreview) {
       recordStats(null);
     }
-    showToast(`The answer was ${puzzle.answer}.`, 3500);
   }
 
   persistSave();
@@ -284,8 +283,10 @@ function submitGuess() {
   renderKeyboard(getKeyboardStatuses(), null);
   renderStats();
 
-  if (progress.completed) {
-    elements.statsDialog.open || elements.statsDialog.showModal();
+  if (progress.won) {
+    queueWinCelebration(progress.guesses.length - 1);
+  } else if (progress.completed) {
+    showToast(`The answer was ${puzzle.answer}.`, 3500);
   }
 }
 
@@ -358,6 +359,26 @@ function renderBoard(options = {}) {
 
     elements.board.appendChild(row);
   }
+}
+
+function queueWinCelebration(rowIndex) {
+  clearTimeout(appState.winAnimationTimer);
+  const delay = appState.puzzle.length * 90 + 440;
+
+  appState.winAnimationTimer = setTimeout(() => {
+    celebrateWin(rowIndex);
+    showToast(`Solved in ${getProgress().guesses.length}/${appState.puzzle.maxGuesses}.`, 2600);
+  }, delay);
+}
+
+function celebrateWin(rowIndex) {
+  const tiles = [...elements.board.querySelectorAll(`.tile[data-row="${rowIndex}"].correct`)];
+  tiles.forEach((tile, index) => {
+    tile.classList.remove("celebrate");
+    void tile.offsetWidth;
+    tile.classList.add("celebrate");
+    tile.style.animationDelay = `${index * 120}ms`;
+  });
 }
 
 function renderKeyboard(statuses, pressedKey) {
