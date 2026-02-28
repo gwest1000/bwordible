@@ -13,6 +13,8 @@ const { START_DATE, selectPuzzleForDateKey, shiftDateKey } = await import(
   pathToFileURL(path.join(ROOT, "puzzle-utils.mjs")).href
 );
 
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 function getPuzzle(dateKey) {
   return selectPuzzleForDateKey(answers, dateKey);
 }
@@ -28,14 +30,20 @@ function findDateByLength(targetLength, startDateKey = START_DATE, searchWindow 
   throw new Error(`Unable to find a ${targetLength}-letter puzzle within ${searchWindow} days.`);
 }
 
-test("renders the correct blocked tiles for a 4-letter archive puzzle", async ({ page }) => {
-  const archiveDate = findDateByLength(4);
-  const puzzle = getPuzzle(archiveDate);
+function formatSummaryDate(dateKey) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return `${day} ${MONTH_LABELS[month - 1]}, ${year}`;
+}
 
-  await page.goto(`/?today=2026-03-15&date=${archiveDate}`);
+test("renders the correct blocked tiles and summary for a 4-letter daily puzzle", async ({ page }) => {
+  const todayKey = findDateByLength(4);
+  const puzzle = getPuzzle(todayKey);
 
-  await expect(page.getByTestId("mode-value")).toHaveText("Archive");
-  await expect(page.getByTestId("puzzle-meta")).toHaveText(`${puzzle.length} letters • ${puzzle.maxGuesses} guesses`);
+  await page.goto(`/?today=${todayKey}`);
+
+  await expect(page.getByTestId("today-summary")).toHaveText(
+    `Today: ${formatSummaryDate(todayKey)} | ${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses`,
+  );
   await expect(page.locator('[data-testid="board"] .tile.blocked')).toHaveCount(
     (6 - puzzle.length) * puzzle.maxGuesses,
   );
@@ -46,14 +54,13 @@ test("solves the ranked daily puzzle and persists stats", async ({ page }) => {
   const puzzle = getPuzzle(todayKey);
 
   await page.goto(`/?today=${todayKey}`);
-  await expect(page.getByTestId("puzzle-meta")).toHaveText(`${puzzle.length} letters • ${puzzle.maxGuesses} guesses`);
-  await expect(page.getByTestId("status-banner")).toContainText("Guess");
+  await expect(page.getByTestId("today-summary")).toContainText(`${puzzle.length}-letter word`);
+
   await page.keyboard.type(puzzle.answer);
   await page.keyboard.press("Enter");
 
-  await expect(page.getByTestId("status-banner")).toContainText("Solved");
+  await expect(page.locator("#toast")).toContainText("Solved");
   await expect(page.getByTestId("current-streak")).toHaveText("1");
-  await expect(page.getByText("Played")).toBeVisible();
 
   const saved = await page.evaluate((storageKey) => {
     return JSON.parse(localStorage.getItem(storageKey));
@@ -64,7 +71,7 @@ test("solves the ranked daily puzzle and persists stats", async ({ page }) => {
   expect(saved.puzzles[todayKey].won).toBe(true);
 });
 
-test("archive browser navigates to past puzzles and reflects seeded activity", async ({ page }) => {
+test("renders the streak calendar from seeded history", async ({ page }) => {
   await page.addInitScript(([storageKey]) => {
     localStorage.setItem(
       storageKey,
@@ -99,14 +106,9 @@ test("archive browser navigates to past puzzles and reflects seeded activity", a
   }, [STORAGE_KEY]);
 
   await page.goto("/?today=2026-03-10");
-  await page.getByRole("button", { name: "Archive" }).click();
-  await page.locator('[data-testid="archive-calendar"] button[data-date="2026-03-08"]').click();
 
-  await expect(page.getByTestId("mode-value")).toHaveText("Archive");
-  await expect(page.locator('[data-testid="streak-calendar"] .day-cell.selected[data-date="2026-03-08"]')).toBeVisible();
   await expect(page.locator('[data-testid="streak-calendar"] .day-cell.won[data-date="2026-03-08"]')).toBeVisible();
   await expect(page.locator('[data-testid="streak-calendar"] .day-cell.lost[data-date="2026-03-09"]')).toBeVisible();
-
-  await page.getByRole("button", { name: "Return to today" }).click();
-  await expect(page.getByTestId("mode-value")).toHaveText("Ranked daily");
+  await expect(page.locator('[data-testid="streak-calendar"] .day-cell.today[data-date="2026-03-10"]')).toBeVisible();
+  await expect(page.getByTestId("current-streak")).toHaveText("0");
 });
