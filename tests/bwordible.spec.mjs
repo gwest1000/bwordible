@@ -42,8 +42,9 @@ test("renders the correct blocked tiles and summary for a 4-letter daily puzzle"
   await page.setViewportSize({ width: 1440, height: 1080 });
   await page.goto(`/?today=${todayKey}`);
 
-  await expect(page.getByTestId("today-summary")).toHaveText(
-    `Today: ${formatSummaryDate(todayKey)} | ${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses`,
+  await expect(page.getByTestId("today-summary")).toContainText(`Today: ${formatSummaryDate(todayKey)}`);
+  await expect(page.getByTestId("today-summary")).toContainText(
+    `${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses`,
   );
   await expect(page.locator('[data-testid="board"] .tile.blocked')).toHaveCount(
     (6 - puzzle.length) * puzzle.maxGuesses,
@@ -59,6 +60,40 @@ test("renders the correct blocked tiles and summary for a 4-letter daily puzzle"
   expect(sidebarBox.x + sidebarBox.width).toBeLessThanOrEqual(gamePanelBox.x - 8);
   expect(sidebarBox.y + sidebarBox.height).toBeLessThanOrEqual(gamePanelBox.y + gamePanelBox.height + 2);
   expect(boardCardBox.x).toBeGreaterThan(gamePanelBox.x);
+});
+
+test("adapts cleanly to tablet and phone widths", async ({ page }) => {
+  const todayKey = "2026-03-01";
+
+  await page.setViewportSize({ width: 1024, height: 1366 });
+  await page.goto(`/?today=${todayKey}`);
+
+  let sidebarBox = await page.locator(".sidebar").boundingBox();
+  let gamePanelBox = await page.locator(".game-panel").boundingBox();
+  let boardBox = await page.locator('[data-testid="board"]').boundingBox();
+  let keyboardBox = await page.locator("#keyboard").boundingBox();
+
+  expect(sidebarBox).not.toBeNull();
+  expect(gamePanelBox).not.toBeNull();
+  expect(boardBox).not.toBeNull();
+  expect(keyboardBox).not.toBeNull();
+  expect(gamePanelBox.y).toBeGreaterThan(sidebarBox.y + sidebarBox.height - 2);
+  expect(boardBox.width).toBeLessThanOrEqual(1024 - 24);
+  expect(keyboardBox.width).toBeLessThanOrEqual(1024 - 24);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+
+  sidebarBox = await page.locator(".sidebar").boundingBox();
+  gamePanelBox = await page.locator(".game-panel").boundingBox();
+  boardBox = await page.locator('[data-testid="board"]').boundingBox();
+  keyboardBox = await page.locator("#keyboard").boundingBox();
+  const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+
+  expect(gamePanelBox.y).toBeGreaterThan(sidebarBox.y + sidebarBox.height - 2);
+  expect(pageWidth).toBeLessThanOrEqual(391);
+  expect(boardBox.x + boardBox.width).toBeLessThanOrEqual(390);
+  expect(keyboardBox.x + keyboardBox.width).toBeLessThanOrEqual(390);
 });
 
 test("solves the ranked daily puzzle and persists stats", async ({ page }) => {

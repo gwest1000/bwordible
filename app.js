@@ -145,7 +145,10 @@ function startGame() {
 function renderTodaySummary() {
   const puzzle = appState.puzzle;
   const dateLabel = formatTodaySummaryDate(appState.todayKey);
-  elements.todaySummary.textContent = `Today: ${dateLabel} | ${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses`;
+  elements.todaySummary.innerHTML = [
+    `<span class="today-line">Today: ${dateLabel}</span>`,
+    `<span class="today-meta">${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses</span>`,
+  ].join("");
 }
 
 function handlePhysicalKeyboard(event) {
