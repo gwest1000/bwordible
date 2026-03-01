@@ -3,20 +3,25 @@ export const START_DATE = "2026-03-01";
 export const BASE_SEED = "bwordible-v1";
 
 export function selectPuzzleForDateKey(answers, dateKey) {
-  const dayIndex = Math.max(0, dateToIndex(dateKey, START_DATE));
-  const cycle = Math.floor(dayIndex / answers.length);
-  const position = dayIndex % answers.length;
-  const order = buildPermutation(answers.length, `${BASE_SEED}:${cycle}`);
-  const answerIndex = order[position];
-  const answer = answers[answerIndex].word;
+  const effectiveDateKey = compareDateKeys(dateKey, START_DATE) < 0 ? START_DATE : dateKey;
+  const cycleYear = getCycleYearForDateKey(effectiveDateKey);
+  const cycleStartDateKey = `${cycleYear}-03-01`;
+  const positionInCycle = Math.max(0, dateToIndex(effectiveDateKey, cycleStartDateKey));
+  const order = buildPermutation(answers.length, `${BASE_SEED}:${cycleYear}`);
+  const answerIndex = order[positionInCycle];
+  if (answerIndex === undefined) {
+    throw new RangeError(`Not enough answers for the ${cycleYear} cycle.`);
+  }
+  const answer = getAnswerWord(answers[answerIndex]);
 
   return {
     answer,
     answerIndex,
-    cycle,
-    dayIndex,
+    cycleStartDateKey,
+    cycleYear,
     length: answer.length,
     maxGuesses: answer.length + 2,
+    positionInCycle,
   };
 }
 
@@ -86,6 +91,19 @@ export function dateToIndex(dateKey, startDateKey) {
   return Math.floor((utcA - utcB) / 86_400_000);
 }
 
+export function getCycleYearForDateKey(dateKey) {
+  if (compareDateKeys(dateKey, START_DATE) < 0) {
+    return Number(START_DATE.slice(0, 4));
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (month > 3 || (month === 3 && day >= 1)) {
+    return year;
+  }
+
+  return year - 1;
+}
+
 function xmur3(input) {
   let hash = 1779033703 ^ input.length;
   for (let index = 0; index < input.length; index += 1) {
@@ -111,4 +129,8 @@ function mulberry32(seed) {
 
 function pad(value) {
   return String(value).padStart(2, "0");
+}
+
+function getAnswerWord(entry) {
+  return typeof entry === "string" ? entry.toUpperCase() : entry.word.toUpperCase();
 }

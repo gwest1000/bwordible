@@ -9,7 +9,7 @@ const ROOT = path.resolve(process.cwd());
 const answers = JSON.parse(
   await fs.readFile(path.join(ROOT, "jwordl_tier1_expanded_core_vocab_4to6.json"), "utf8"),
 );
-const { START_DATE, selectPuzzleForDateKey, shiftDateKey } = await import(
+const { BASE_SEED, START_DATE, buildPermutation, getCycleYearForDateKey, selectPuzzleForDateKey, shiftDateKey } = await import(
   pathToFileURL(path.join(ROOT, "puzzle-utils.mjs")).href
 );
 
@@ -19,7 +19,7 @@ function getPuzzle(dateKey) {
   return selectPuzzleForDateKey(answers, dateKey);
 }
 
-function findDateByLength(targetLength, startDateKey = START_DATE, searchWindow = 60) {
+function findDateByLength(targetLength, startDateKey = START_DATE, searchWindow = 366) {
   for (let offset = 0; offset < searchWindow; offset += 1) {
     const dateKey = shiftDateKey(startDateKey, offset);
     if (getPuzzle(dateKey).length === targetLength) {
@@ -29,6 +29,28 @@ function findDateByLength(targetLength, startDateKey = START_DATE, searchWindow 
 
   throw new Error(`Unable to find a ${targetLength}-letter puzzle within ${searchWindow} days.`);
 }
+
+test("reshuffles the master answer order on each March 1 cycle", () => {
+  const order2026 = buildPermutation(answers.length, `${BASE_SEED}:2026`);
+  const order2027 = buildPermutation(answers.length, `${BASE_SEED}:2027`);
+  const feb2027 = getPuzzle("2027-02-28");
+  const mar2027 = getPuzzle("2027-03-01");
+
+  expect(order2026).toHaveLength(answers.length);
+  expect(order2027).toHaveLength(answers.length);
+  expect(new Set(order2026).size).toBe(answers.length);
+  expect(new Set(order2027).size).toBe(answers.length);
+  expect(order2026).not.toEqual(order2027);
+
+  expect(getCycleYearForDateKey("2027-02-28")).toBe(2026);
+  expect(getCycleYearForDateKey("2027-03-01")).toBe(2027);
+  expect(feb2027.cycleYear).toBe(2026);
+  expect(feb2027.positionInCycle).toBe(364);
+  expect(mar2027.cycleYear).toBe(2027);
+  expect(mar2027.positionInCycle).toBe(0);
+  expect(feb2027.answerIndex).toBe(order2026[364]);
+  expect(mar2027.answerIndex).toBe(order2027[0]);
+});
 
 function formatSummaryDate(dateKey) {
   const [year, month, day] = dateKey.split("-").map(Number);
