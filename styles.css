@@ -857,7 +857,18 @@ button:disabled {
     min-width: min(100vw - 1rem, 42rem);
   }
 
-  .hero-actions,
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .hero-actions > button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 0.5rem;
+  }
+
   .card-header,
   .modal-header {
     align-items: start;

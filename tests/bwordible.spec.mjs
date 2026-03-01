@@ -127,11 +127,16 @@ test("adapts cleanly to tablet and phone widths", async ({ page }) => {
   gamePanelBox = await page.locator(".game-panel").boundingBox();
   boardBox = await page.locator('[data-testid="board"]').boundingBox();
   keyboardBox = await page.locator("#keyboard").boundingBox();
+  const helpButtonBox = await page.locator("#helpButton").boundingBox();
+  const statsButtonBox = await page.locator("#statsButton").boundingBox();
+  const shareButtonBox = await page.locator("#shareButton").boundingBox();
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
 
   expect(gamePanelBox.y).toBeGreaterThan(brandBox.y + brandBox.height - 2);
   expect(statsBox.y).toBeGreaterThan(gamePanelBox.y + gamePanelBox.height - 2);
   expect(calendarBox.y).toBeGreaterThan(statsBox.y + statsBox.height - 2);
+  expect(Math.abs(helpButtonBox.y - statsButtonBox.y)).toBeLessThanOrEqual(2);
+  expect(Math.abs(statsButtonBox.y - shareButtonBox.y)).toBeLessThanOrEqual(2);
   expect(pageWidth).toBeLessThanOrEqual(391);
   expect(boardBox.x + boardBox.width).toBeLessThanOrEqual(390);
   expect(keyboardBox.x + keyboardBox.width).toBeLessThanOrEqual(390);
