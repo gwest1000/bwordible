@@ -16,7 +16,7 @@ export function selectPuzzleForDateKey(answers, dateKey) {
     cycle,
     dayIndex,
     length: answer.length,
-    maxGuesses: answer.length + 1,
+    maxGuesses: answer.length + 2,
   };
 }
 

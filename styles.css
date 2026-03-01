@@ -87,15 +87,26 @@ body::before {
   display: grid;
   gap: 1.5rem;
   grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-areas:
+    "brand game"
+    "stats game"
+    "calendar game";
 }
 
-.sidebar {
-  display: grid;
-  gap: 0.8rem;
-  grid-template-rows: auto auto minmax(0, 1fr);
-  height: calc(100vh - 2.5rem);
-  position: sticky;
-  top: 1.25rem;
+.brand-card {
+  grid-area: brand;
+}
+
+.stats-card {
+  grid-area: stats;
+}
+
+.calendar-card {
+  grid-area: calendar;
+}
+
+.game-panel {
+  grid-area: game;
 }
 
 .reveal {
@@ -198,6 +209,7 @@ button {
   border-radius: 999px;
   cursor: pointer;
   font: inherit;
+  touch-action: manipulation;
   transition:
     transform 160ms ease,
     background-color 160ms ease,
@@ -411,6 +423,7 @@ button:disabled {
 .keyboard {
   display: grid;
   gap: 0.4rem;
+  touch-action: manipulation;
 }
 
 .keyboard-row {
@@ -491,8 +504,8 @@ button:disabled {
 }
 
 .day-cell.won {
-  background: rgba(77, 158, 43, 0.22);
-  border-color: rgba(77, 158, 43, 0.34);
+  background: rgba(77, 158, 43, calc(0.18 + (var(--win-strength, 0.55) * 0.42)));
+  border-color: rgba(77, 158, 43, calc(0.22 + (var(--win-strength, 0.55) * 0.36)));
   color: #2c5f15;
 }
 
@@ -752,6 +765,10 @@ button:disabled {
   .layout {
     gap: 1.1rem;
     grid-template-columns: 272px minmax(0, 1fr);
+    grid-template-areas:
+      "brand game"
+      "stats game"
+      "calendar game";
   }
 }
 
@@ -765,12 +782,13 @@ button:disabled {
   }
 
   .layout {
+    align-items: start;
     grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    height: auto;
-    position: static;
+    grid-template-areas:
+      "brand"
+      "game"
+      "stats"
+      "calendar";
   }
 
   .game-panel {

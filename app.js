@@ -82,7 +82,6 @@ async function init() {
   appState.todayKey = appState.simulatedTodayKey ?? getDateKeyInTimeZone(new Date(), TIME_ZONE);
 
   renderKeyboard({}, null);
-  renderStats();
 
   const [answerResponse, guessesResponse] = await Promise.all([
     fetch(ANSWERS_PATH),
@@ -119,6 +118,7 @@ function attachEvents() {
   });
   elements.shareButton.addEventListener("click", handleShare);
   elements.keyboard.addEventListener("click", handleVirtualKeyboard);
+  elements.keyboard.addEventListener("touchend", handleVirtualKeyboardTouch, { passive: false });
 }
 
 function startGame() {
@@ -197,7 +197,24 @@ function handleVirtualKeyboard(event) {
     return;
   }
 
-  const key = button.dataset.key;
+  if (event.type === "click" && event.detail === 0) {
+    return;
+  }
+
+  pressVirtualKey(button.dataset.key);
+}
+
+function handleVirtualKeyboardTouch(event) {
+  const button = event.target.closest("button[data-key]");
+  if (!button || !appState.ready) {
+    return;
+  }
+
+  event.preventDefault();
+  pressVirtualKey(button.dataset.key);
+}
+
+function pressVirtualKey(key) {
   flashKey(key);
 
   if (key === "ENTER") {
@@ -297,7 +314,6 @@ function renderBoard(options = {}) {
   const { popCell = null, revealRowIndex = null } = options;
   const puzzle = appState.puzzle;
   const progress = getProgress();
-  const blockedCount = 6 - puzzle.length;
   const evaluations = progress.guesses.map((guess) => evaluateGuess(guess, puzzle.answer));
 
   elements.board.innerHTML = "";
@@ -315,14 +331,14 @@ function renderBoard(options = {}) {
       const tile = document.createElement("div");
       tile.className = "tile";
 
-      if (columnIndex < blockedCount) {
+      if (columnIndex >= puzzle.length) {
         tile.classList.add("blocked");
         tile.setAttribute("aria-hidden", "true");
         row.appendChild(tile);
         continue;
       }
 
-      const letterIndex = columnIndex - blockedCount;
+      const letterIndex = columnIndex;
       const letter = letters[letterIndex] ?? "";
       const status = statuses[letterIndex];
 
@@ -445,7 +461,7 @@ function renderDistribution(distribution) {
   const max = Math.max(1, ...Object.values(distribution));
   elements.distribution.innerHTML = "";
 
-  for (let guessCount = 1; guessCount <= 7; guessCount += 1) {
+  for (let guessCount = 1; guessCount <= 8; guessCount += 1) {
     const value = distribution[String(guessCount)] ?? 0;
     const row = document.createElement("div");
     row.className = "distribution-row";
@@ -490,12 +506,18 @@ function renderActivityCalendar(container, totalDays) {
   for (let offset = 0; offset < totalDays; offset += 1) {
     const dateKey = shiftDateKey(startDateKey, offset);
     const cell = document.createElement("div");
-    const status = getDayStatus(dateKey);
+    const state = getDayState(dateKey);
 
-    cell.className = `day-cell ${status}`;
+    cell.className = `day-cell ${state.type}`;
     cell.dataset.date = dateKey;
     cell.textContent = String(Number(dateKey.slice(-2)));
-    cell.title = `${formatDateKey(dateKey, TIME_ZONE)}: ${describeDayStatus(status)}`;
+    if (state.intensity !== null) {
+      cell.style.setProperty("--win-strength", String(state.intensity));
+    }
+    if (state.isToday) {
+      cell.classList.add("today");
+    }
+    cell.title = `${formatDateKey(dateKey, TIME_ZONE)}: ${describeDayState(state)}`;
 
     grid.appendChild(cell);
   }
@@ -534,8 +556,7 @@ function buildShareText() {
   const blockedCount = 6 - puzzle.length;
   const lines = progress.guesses.map((guess) => {
     const statuses = evaluateGuess(guess, puzzle.answer);
-    const left = "⬛".repeat(blockedCount);
-    const right = statuses
+    const filled = statuses
       .map((status) => {
         if (status === "correct") {
           return "🟩";
@@ -546,7 +567,7 @@ function buildShareText() {
         return "⬜";
       })
       .join("");
-    return `${left}${right}`;
+    return `${filled}${"⬛".repeat(blockedCount)}`;
   });
 
   return [`bWORDibLE ${puzzle.displayDate} ${result}`, ...lines].join("\n");
@@ -642,31 +663,40 @@ function buildCalendarRangeLabel(totalDays) {
   return `${formatDateKey(start, TIME_ZONE)} to ${formatDateKey(appState.todayKey, TIME_ZONE)}`;
 }
 
-function getDayStatus(dateKey) {
-  if (dateKey === appState.todayKey) {
-    return "today";
-  }
-
+function getDayState(dateKey) {
   if (compareDateKeys(dateKey, START_DATE) < 0) {
-    return "empty";
+    return { intensity: null, isToday: dateKey === appState.todayKey, type: "empty" };
   }
 
   if (compareDateKeys(dateKey, appState.todayKey) > 0) {
-    return "empty";
+    return { intensity: null, isToday: false, type: "empty" };
   }
 
   const progress = appState.save.puzzles[dateKey];
   if (progress?.completed) {
-    return progress.won ? "won" : "lost";
+    if (progress.won) {
+      return {
+        intensity: getWinIntensity(dateKey, progress.guesses.length),
+        guessesText: `${progress.guesses.length}/${selectPuzzleForDateKey(appState.answers, dateKey).maxGuesses}`,
+        isToday: dateKey === appState.todayKey,
+        type: "won",
+      };
+    }
+
+    return { intensity: null, isToday: dateKey === appState.todayKey, type: "lost" };
   }
 
-  return "missed";
+  if (dateKey === appState.todayKey) {
+    return { intensity: null, isToday: true, type: "today" };
+  }
+
+  return { intensity: null, isToday: false, type: "missed" };
 }
 
-function describeDayStatus(status) {
-  switch (status) {
+function describeDayState(state) {
+  switch (state.type) {
     case "won":
-      return "Won";
+      return `Won in ${state.guessesText ?? "?"}`;
     case "lost":
       return "Lost";
     case "missed":
@@ -676,6 +706,20 @@ function describeDayStatus(status) {
     default:
       return "No puzzle";
   }
+}
+
+function getWinIntensity(dateKey, guessCount) {
+  if (!appState.answers.length) {
+    return 0.5;
+  }
+
+  const puzzle = selectPuzzleForDateKey(appState.answers, dateKey);
+  if (puzzle.maxGuesses <= 1) {
+    return 1;
+  }
+
+  const normalized = (puzzle.maxGuesses - guessCount) / (puzzle.maxGuesses - 1);
+  return Math.max(0.08, Math.min(1, normalized));
 }
 
 function recordStats(winningGuesses) {
@@ -696,7 +740,7 @@ function recordStats(winningGuesses) {
     stats.currentStreak = streakContinues ? stats.currentStreak + 1 : 1;
     stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
     stats.totalWinningGuesses += winningGuesses;
-    stats.distribution[String(winningGuesses)] += 1;
+    stats.distribution[String(winningGuesses)] = (stats.distribution[String(winningGuesses)] ?? 0) + 1;
   } else {
     stats.currentStreak = 0;
   }
@@ -739,6 +783,7 @@ function createDefaultSave() {
         5: 0,
         6: 0,
         7: 0,
+        8: 0,
       },
       lastCompletedDate: null,
       maxStreak: 0,

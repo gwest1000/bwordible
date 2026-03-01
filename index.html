@@ -17,58 +17,20 @@
 
     <div class="app-shell">
       <main class="layout">
-        <aside class="sidebar">
-          <section class="brand-card reveal reveal-1">
-            <p class="eyebrow">Daily Bible-themed word puzzle</p>
-            <h1>bWORDibLE</h1>
-            <p id="todaySummary" class="today-summary" data-testid="today-summary">
-              <span class="today-line">Today: Loading...</span>
-              <span class="today-meta">Loading...</span>
-            </p>
+        <section class="brand-card reveal reveal-1">
+          <p class="eyebrow">Daily Bible-themed word puzzle</p>
+          <h1>bWORDibLE</h1>
+          <p id="todaySummary" class="today-summary" data-testid="today-summary">
+            <span class="today-line">Today: Loading...</span>
+            <span class="today-meta">Loading...</span>
+          </p>
 
-            <div class="hero-actions">
-              <button id="helpButton" class="ghost-button" type="button">How to play</button>
-              <button id="statsButton" class="ghost-button" type="button">Stats</button>
-              <button id="shareButton" class="primary-button" type="button">Share</button>
-            </div>
-          </section>
-
-          <section class="info-card stats-card stat-grid reveal reveal-2">
-            <div>
-              <p class="label">Current streak</p>
-              <p id="currentStreak" class="big-stat" data-testid="current-streak">0</p>
-            </div>
-            <div>
-              <p class="label">Win rate</p>
-              <p id="winRate" class="big-stat">0%</p>
-            </div>
-            <div>
-              <p class="label">Played</p>
-              <p id="playedCount" class="big-stat">0</p>
-            </div>
-            <div>
-              <p class="label">Best streak</p>
-              <p id="bestStreak" class="big-stat">0</p>
-            </div>
-          </section>
-
-          <section class="info-card calendar-card reveal reveal-3">
-            <div class="card-header">
-              <div>
-                <p class="label">Streak calendar</p>
-                <h2>Streak calendar</h2>
-              </div>
-              <p id="calendarRangeLabel" class="mini-copy">Last 35 days</p>
-            </div>
-            <div id="streakCalendar" class="activity-calendar" data-testid="streak-calendar"></div>
-            <div class="legend">
-              <span class="legend-item"><span class="legend-swatch won"></span>Won</span>
-              <span class="legend-item"><span class="legend-swatch lost"></span>Lost</span>
-              <span class="legend-item"><span class="legend-swatch missed"></span>Missed</span>
-              <span class="legend-item"><span class="legend-swatch today"></span>Today</span>
-            </div>
-          </section>
-        </aside>
+          <div class="hero-actions">
+            <button id="helpButton" class="ghost-button" type="button">How to play</button>
+            <button id="statsButton" class="ghost-button" type="button">Stats</button>
+            <button id="shareButton" class="primary-button" type="button">Share</button>
+          </div>
+        </section>
 
         <section class="game-panel reveal reveal-4" aria-label="Game area">
           <section class="board-card" aria-label="Game board">
@@ -78,6 +40,42 @@
           <section class="keyboard-card" aria-label="On-screen keyboard">
             <div id="keyboard" class="keyboard"></div>
           </section>
+        </section>
+
+        <section class="info-card stats-card stat-grid reveal reveal-2">
+          <div>
+            <p class="label">Current streak</p>
+            <p id="currentStreak" class="big-stat" data-testid="current-streak">0</p>
+          </div>
+          <div>
+            <p class="label">Win rate</p>
+            <p id="winRate" class="big-stat">0%</p>
+          </div>
+          <div>
+            <p class="label">Played</p>
+            <p id="playedCount" class="big-stat">0</p>
+          </div>
+          <div>
+            <p class="label">Best streak</p>
+            <p id="bestStreak" class="big-stat">0</p>
+          </div>
+        </section>
+
+        <section class="info-card calendar-card reveal reveal-3">
+          <div class="card-header">
+            <div>
+              <p class="label">Streak calendar</p>
+              <h2>Streak calendar</h2>
+            </div>
+            <p id="calendarRangeLabel" class="mini-copy">Last 35 days</p>
+          </div>
+          <div id="streakCalendar" class="activity-calendar" data-testid="streak-calendar"></div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-swatch won"></span>Won</span>
+            <span class="legend-item"><span class="legend-swatch lost"></span>Lost</span>
+            <span class="legend-item"><span class="legend-swatch missed"></span>Missed</span>
+            <span class="legend-item"><span class="legend-swatch today"></span>Today</span>
+          </div>
         </section>
       </main>
     </div>
@@ -98,9 +96,9 @@
             tiles stay blocked and black.
           </p>
           <ul class="rules">
-            <li>4-letter answer: 5 guesses</li>
-            <li>5-letter answer: 6 guesses</li>
-            <li>6-letter answer: 7 guesses</li>
+            <li>4-letter answer: 6 guesses</li>
+            <li>5-letter answer: 7 guesses</li>
+            <li>6-letter answer: 8 guesses</li>
             <li>Green means correct letter, correct spot.</li>
             <li>Yellow means correct letter, wrong spot.</li>
             <li>Gray means the letter is not in the answer.</li>
