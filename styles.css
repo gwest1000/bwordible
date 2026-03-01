@@ -15,7 +15,7 @@
   --surface-strong: rgba(255, 248, 233, 0.95);
   --sans: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
   --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  --tile-size: min(4.2rem, calc((100vw - 27rem) / 7), calc((100vh - 10rem) / 8.6));
+  --tile-size: clamp(2.85rem, calc((100vw - 24rem) / 9), 3.65rem);
 }
 
 * {
@@ -83,15 +83,17 @@ body::before {
 }
 
 .layout {
-  align-items: start;
+  align-items: stretch;
   display: grid;
-  gap: 1.25rem;
-  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 1.5rem;
+  grid-template-columns: 320px minmax(0, 1fr);
 }
 
 .sidebar {
   display: grid;
-  gap: 1rem;
+  gap: 0.8rem;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: calc(100vh - 2.5rem);
   position: sticky;
   top: 1.25rem;
 }
@@ -137,7 +139,7 @@ body.app-ready .reveal-4 {
 .game-panel,
 .info-card {
   border-radius: 1.6rem;
-  padding: 1.2rem;
+  padding: 0.85rem 0.95rem;
 }
 
 .brand-card h1,
@@ -149,8 +151,9 @@ body.app-ready .reveal-4 {
 }
 
 .brand-card h1 {
-  font-size: clamp(2.6rem, 5vw, 4.4rem);
-  line-height: 0.92;
+  font-size: clamp(1.95rem, 3.6vw, 3.15rem);
+  line-height: 0.9;
+  max-width: 100%;
 }
 
 .eyebrow,
@@ -166,16 +169,16 @@ body.app-ready .reveal-4 {
 .today-summary {
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 1.08rem;
-  line-height: 1.45;
-  margin: 0.85rem 0 0;
+  font-size: 0.93rem;
+  line-height: 1.28;
+  margin: 0.45rem 0 0;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-top: 1.1rem;
+  gap: 0.45rem;
+  margin-top: 0.72rem;
 }
 
 button {
@@ -207,7 +210,7 @@ button:disabled {
 
 .ghost-button,
 .primary-button {
-  padding: 0.85rem 1.1rem;
+  padding: 0.64rem 0.88rem;
 }
 
 .ghost-button {
@@ -227,7 +230,7 @@ button:disabled {
   display: flex;
   gap: 1rem;
   justify-content: space-between;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.42rem;
 }
 
 .mini-copy {
@@ -237,23 +240,26 @@ button:disabled {
 
 .stat-grid {
   display: grid;
-  gap: 1rem;
+  gap: 0.55rem 0.8rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .big-stat {
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 2rem;
+  font-size: 1.5rem;
   letter-spacing: -0.04em;
-  margin: 0.15rem 0 0;
+  margin: 0.05rem 0 0;
 }
 
 .game-panel {
   display: grid;
-  gap: 1rem;
+  gap: 0.85rem;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: calc(100vh - 2.5rem);
   min-height: calc(100vh - 2.5rem);
-  padding: 1rem;
+  min-width: 0;
+  padding: 0.85rem;
 }
 
 .board-card,
@@ -265,14 +271,18 @@ button:disabled {
   align-items: center;
   display: flex;
   justify-content: center;
-  padding: 1rem;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.7rem;
 }
 
 .board {
   display: grid;
   gap: 0.55rem;
   justify-items: center;
+  max-width: 100%;
   transform-origin: center center;
+  width: min-content;
 }
 
 .board.shake {
@@ -380,17 +390,17 @@ button:disabled {
 }
 
 .keyboard-card {
-  padding: 0.9rem 0.8rem 0.8rem;
+  padding: 0.7rem;
 }
 
 .keyboard {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .keyboard-row {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.32rem;
   justify-content: center;
 }
 
@@ -404,29 +414,44 @@ button:disabled {
   display: inline-flex;
   font-size: 0.92rem;
   font-weight: 700;
-  height: 3rem;
+  height: 2.75rem;
   justify-content: center;
-  min-width: 2.45rem;
-  padding: 0 0.65rem;
+  min-width: 2.3rem;
+  padding: 0 0.55rem;
 }
 
 .key.wide {
-  min-width: 4.4rem;
+  min-width: 4rem;
 }
 
 .key.pressed {
   animation: key-bounce 160ms ease;
 }
 
+.stats-card .label {
+  margin-bottom: 0.18rem;
+}
+
+.calendar-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .activity-calendar {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.35rem;
+}
+
+.calendar-card .activity-calendar {
+  flex: 1;
 }
 
 .calendar-weekdays,
 .calendar-grid {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.22rem;
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
@@ -439,14 +464,15 @@ button:disabled {
 
 .day-cell {
   align-items: center;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: auto;
   background: rgba(255, 251, 243, 0.76);
   border: 1px solid rgba(33, 24, 15, 0.1);
-  border-radius: 0.75rem;
+  border-radius: 0.65rem;
   color: var(--ink-soft);
   display: flex;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   justify-content: center;
+  min-height: 2rem;
 }
 
 .day-cell.won {
@@ -474,8 +500,8 @@ button:disabled {
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem 1rem;
-  margin-top: 0.85rem;
+  gap: 0.35rem 0.7rem;
+  margin-top: 0.42rem;
 }
 
 .legend-item {
@@ -705,11 +731,12 @@ button:disabled {
 
 @media (max-width: 1040px) {
   :root {
-    --tile-size: min(4rem, calc((100vw - 3rem) / 7), calc((100vh - 12rem) / 8.8));
+    --tile-size: clamp(2.8rem, calc((100vw - 22rem) / 9), 3.35rem);
   }
 
   .layout {
-    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 1.1rem;
+    grid-template-columns: 272px minmax(0, 1fr);
   }
 }
 
@@ -727,10 +754,12 @@ button:disabled {
   }
 
   .sidebar {
+    height: auto;
     position: static;
   }
 
   .game-panel {
+    height: auto;
     min-height: auto;
   }
 

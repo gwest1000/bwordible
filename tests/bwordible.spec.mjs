@@ -39,6 +39,7 @@ test("renders the correct blocked tiles and summary for a 4-letter daily puzzle"
   const todayKey = findDateByLength(4);
   const puzzle = getPuzzle(todayKey);
 
+  await page.setViewportSize({ width: 1440, height: 1080 });
   await page.goto(`/?today=${todayKey}`);
 
   await expect(page.getByTestId("today-summary")).toHaveText(
@@ -47,6 +48,17 @@ test("renders the correct blocked tiles and summary for a 4-letter daily puzzle"
   await expect(page.locator('[data-testid="board"] .tile.blocked')).toHaveCount(
     (6 - puzzle.length) * puzzle.maxGuesses,
   );
+
+  const sidebarBox = await page.locator(".sidebar").boundingBox();
+  const gamePanelBox = await page.locator(".game-panel").boundingBox();
+  const boardCardBox = await page.locator(".board-card").boundingBox();
+
+  expect(sidebarBox).not.toBeNull();
+  expect(gamePanelBox).not.toBeNull();
+  expect(boardCardBox).not.toBeNull();
+  expect(sidebarBox.x + sidebarBox.width).toBeLessThanOrEqual(gamePanelBox.x - 8);
+  expect(sidebarBox.y + sidebarBox.height).toBeLessThanOrEqual(gamePanelBox.y + gamePanelBox.height + 2);
+  expect(boardCardBox.x).toBeGreaterThan(gamePanelBox.x);
 });
 
 test("solves the ranked daily puzzle and persists stats", async ({ page }) => {
