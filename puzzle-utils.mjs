@@ -1,4 +1,4 @@
-export const TIME_ZONE = "America/Los_Angeles";
+export const TIME_ZONE = "Etc/GMT+7";
 export const START_DATE = "2026-03-01";
 export const BASE_SEED = "bwordible-v1";
 
