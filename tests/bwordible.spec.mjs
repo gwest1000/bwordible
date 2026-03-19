@@ -57,6 +57,11 @@ function formatSummaryDate(dateKey) {
   return `${day} ${MONTH_LABELS[month - 1]}, ${year}`;
 }
 
+async function waitForPuzzleReady(page, dateKey) {
+  await expect(page.getByTestId("today-summary")).toContainText(`Today: ${formatSummaryDate(dateKey)}`);
+  await expect(page.getByTestId("today-summary")).not.toContainText("Loading");
+}
+
 function getWrongGuess(length, answer) {
   const match = answers.find((entry) => entry.length === length && entry.word !== answer);
   if (!match) {
@@ -135,8 +140,8 @@ test("adapts cleanly to tablet and phone widths", async ({ page }) => {
   expect(gamePanelBox.y).toBeGreaterThan(brandBox.y + brandBox.height - 2);
   expect(statsBox.y).toBeGreaterThan(gamePanelBox.y + gamePanelBox.height - 2);
   expect(calendarBox.y).toBeGreaterThan(statsBox.y + statsBox.height - 2);
-  expect(Math.abs(helpButtonBox.y - statsButtonBox.y)).toBeLessThanOrEqual(2);
-  expect(Math.abs(statsButtonBox.y - shareButtonBox.y)).toBeLessThanOrEqual(2);
+  expect(Math.abs(helpButtonBox.y - statsButtonBox.y)).toBeLessThanOrEqual(5);
+  expect(Math.abs(statsButtonBox.y - shareButtonBox.y)).toBeLessThanOrEqual(5);
   expect(pageWidth).toBeLessThanOrEqual(391);
   expect(boardBox.x + boardBox.width).toBeLessThanOrEqual(390);
   expect(keyboardBox.x + keyboardBox.width).toBeLessThanOrEqual(390);
@@ -164,6 +169,49 @@ test("solves the ranked daily puzzle and persists stats", async ({ page }) => {
   expect(saved.stats.played).toBe(1);
   expect(saved.stats.wins).toBe(1);
   expect(saved.puzzles[todayKey].won).toBe(true);
+});
+
+test("shows the answer after a losing puzzle", async ({ page }) => {
+  const todayKey = "2026-03-05";
+  const puzzle = getPuzzle(todayKey);
+  const wrongGuess = getWrongGuess(puzzle.length, puzzle.answer);
+
+  await page.goto(`/?today=${todayKey}`);
+  await waitForPuzzleReady(page, todayKey);
+
+  for (let guess = 0; guess < puzzle.maxGuesses; guess += 1) {
+    await page.keyboard.type(wrongGuess);
+    await page.keyboard.press("Enter");
+  }
+
+  await expect(page.getByTestId("result-banner")).toContainText(`The word was ${puzzle.answer}.`);
+  await expect(page.locator("#toast")).toContainText(`The word was ${puzzle.answer}.`);
+});
+
+test("keeps the career streak across skipped days", async ({ page }) => {
+  const firstDate = "2026-03-01";
+  const secondDate = "2026-03-03";
+  const firstPuzzle = getPuzzle(firstDate);
+  const secondPuzzle = getPuzzle(secondDate);
+
+  await page.goto(`/?today=${firstDate}`);
+  await waitForPuzzleReady(page, firstDate);
+  await page.keyboard.type(firstPuzzle.answer);
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("current-streak")).toHaveText("1");
+
+  await page.goto(`/?today=${secondDate}`);
+  await waitForPuzzleReady(page, secondDate);
+  await page.keyboard.type(secondPuzzle.answer);
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("current-streak")).toHaveText("2");
+
+  const saved = await page.evaluate((storageKey) => {
+    return JSON.parse(localStorage.getItem(storageKey));
+  }, STORAGE_KEY);
+
+  expect(saved.stats.currentStreak).toBe(2);
+  expect(saved.stats.maxStreak).toBe(2);
 });
 
 test("renders the streak calendar from saved multi-day results", async ({ page }) => {

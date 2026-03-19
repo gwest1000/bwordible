@@ -36,6 +36,7 @@ const elements = {
   helpDialog: document.querySelector("#helpDialog"),
   keyboard: document.querySelector("#keyboard"),
   playedCount: document.querySelector("#playedCount"),
+  resultBanner: document.querySelector("#resultBanner"),
   shareButton: document.querySelector("#shareButton"),
   statsAverage: document.querySelector("#statsAverage"),
   statsButton: document.querySelector("#statsButton"),
@@ -138,6 +139,7 @@ function startGame() {
 
   renderTodaySummary();
   renderBoard();
+  renderResultBanner();
   renderKeyboard(getKeyboardStatuses(), null);
   renderStats();
 }
@@ -300,13 +302,14 @@ function submitGuess() {
 
   persistSave();
   renderBoard({ revealRowIndex: progress.guesses.length - 1 });
+  renderResultBanner();
   renderKeyboard(getKeyboardStatuses(), null);
   renderStats();
 
   if (progress.won) {
     queueWinCelebration(progress.guesses.length - 1);
   } else if (progress.completed) {
-    showToast(`The answer was ${puzzle.answer}.`, 3500);
+    showToast(`The word was ${puzzle.answer}.`, 4200);
   }
 }
 
@@ -390,6 +393,19 @@ function queueWinCelebration(rowIndex) {
   }, delay);
 }
 
+function renderResultBanner() {
+  const progress = getProgress();
+
+  if (!progress.completed || progress.won) {
+    elements.resultBanner.hidden = true;
+    elements.resultBanner.textContent = "";
+    return;
+  }
+
+  elements.resultBanner.hidden = false;
+  elements.resultBanner.textContent = `The word was ${appState.puzzle.answer}.`;
+}
+
 function celebrateWin(rowIndex) {
   const tiles = [...elements.board.querySelectorAll(`.tile[data-row="${rowIndex}"].correct`)];
   tiles.forEach((tile, index) => {
@@ -435,13 +451,13 @@ function renderKeyboard(statuses, pressedKey) {
 }
 
 function renderStats() {
+  syncDerivedStats(appState.save, appState.todayKey);
   const stats = appState.save.stats;
   const winRate = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
   const average = stats.wins ? (stats.totalWinningGuesses / stats.wins).toFixed(1) : "-";
-  const currentStreak = computeDisplayedCurrentStreak();
   const rangeText = buildCalendarRangeLabel(CALENDAR_WINDOW_DAYS);
 
-  elements.currentStreak.textContent = String(currentStreak);
+  elements.currentStreak.textContent = String(stats.currentStreak);
   elements.winRate.textContent = `${winRate}%`;
   elements.playedCount.textContent = String(stats.played);
   elements.bestStreak.textContent = String(stats.maxStreak);
@@ -632,32 +648,6 @@ function evaluateGuess(guess, answer) {
   return statuses;
 }
 
-function computeDisplayedCurrentStreak() {
-  if (compareDateKeys(appState.todayKey, START_DATE) < 0) {
-    return 0;
-  }
-
-  let cursor = appState.todayKey;
-  const todayProgress = appState.save.puzzles[cursor];
-
-  if (!todayProgress?.completed || !todayProgress.won) {
-    cursor = shiftDateKey(cursor, -1);
-  }
-
-  let streak = 0;
-
-  while (compareDateKeys(cursor, START_DATE) >= 0) {
-    const progress = appState.save.puzzles[cursor];
-    if (!progress?.completed || !progress.won) {
-      break;
-    }
-    streak += 1;
-    cursor = shiftDateKey(cursor, -1);
-  }
-
-  return streak;
-}
-
 function buildCalendarRangeLabel(totalDays) {
   const start = shiftDateKey(appState.todayKey, -(totalDays - 1));
   return `${formatDateKey(start, TIME_ZONE)} to ${formatDateKey(appState.todayKey, TIME_ZONE)}`;
@@ -734,19 +724,12 @@ function recordStats(winningGuesses) {
 
   if (winningGuesses) {
     stats.wins += 1;
-    const streakContinues =
-      stats.lastCompletedDate &&
-      dateToIndex(appState.puzzle.key, stats.lastCompletedDate) === 1;
-    stats.currentStreak = streakContinues ? stats.currentStreak + 1 : 1;
-    stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
     stats.totalWinningGuesses += winningGuesses;
     stats.distribution[String(winningGuesses)] = (stats.distribution[String(winningGuesses)] ?? 0) + 1;
-  } else {
-    stats.currentStreak = 0;
   }
 
-  stats.lastCompletedDate = appState.puzzle.key;
   progress.statsRecorded = true;
+  syncDerivedStats(appState.save, appState.puzzle.key);
 }
 
 function loadSave() {
@@ -757,13 +740,14 @@ function loadSave() {
     }
 
     const parsed = JSON.parse(raw);
-    return {
+    const save = {
       puzzles: parsed.puzzles ?? {},
       stats: {
         ...createDefaultSave().stats,
         ...(parsed.stats ?? {}),
       },
     };
+    return syncDerivedStats(save);
   } catch (error) {
     console.warn("Failed to load saved game state.", error);
     return createDefaultSave();
@@ -792,6 +776,47 @@ function createDefaultSave() {
       wins: 0,
     },
   };
+}
+
+function syncDerivedStats(save, throughDateKey = getDateKeyInTimeZone(new Date(), TIME_ZONE)) {
+  const streakSummary = computeCareerStreakSummary(save.puzzles, throughDateKey);
+  save.stats.currentStreak = streakSummary.currentStreak;
+  save.stats.maxStreak = streakSummary.maxStreak;
+  save.stats.lastCompletedDate = streakSummary.lastCompletedDate;
+  return save;
+}
+
+function computeCareerStreakSummary(puzzles, throughDateKey) {
+  const rankedResults = Object.entries(puzzles)
+    .filter(([dateKey, progress]) => isRankedCompletedProgress(dateKey, progress, throughDateKey))
+    .sort(([leftDate], [rightDate]) => compareDateKeys(leftDate, rightDate));
+
+  let currentStreak = 0;
+  let maxStreak = 0;
+  let lastCompletedDate = null;
+
+  rankedResults.forEach(([dateKey, progress]) => {
+    lastCompletedDate = dateKey;
+
+    if (progress.won) {
+      currentStreak += 1;
+      maxStreak = Math.max(maxStreak, currentStreak);
+      return;
+    }
+
+    currentStreak = 0;
+  });
+
+  return { currentStreak, lastCompletedDate, maxStreak };
+}
+
+function isRankedCompletedProgress(dateKey, progress, throughDateKey) {
+  return (
+    compareDateKeys(dateKey, START_DATE) >= 0 &&
+    compareDateKeys(dateKey, throughDateKey) <= 0 &&
+    progress?.completed &&
+    (progress.statsRecorded ?? true)
+  );
 }
 
 function createPuzzleProgress() {

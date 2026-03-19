@@ -296,6 +296,8 @@ button:disabled {
 .board-card {
   align-items: center;
   display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   justify-content: center;
   min-height: 0;
   overflow: hidden;
@@ -313,6 +315,19 @@ button:disabled {
 
 .board.shake {
   animation: board-shake 420ms ease;
+}
+
+.result-banner {
+  background: rgba(159, 77, 62, 0.12);
+  border: 1px solid rgba(159, 77, 62, 0.18);
+  border-radius: 999px;
+  color: var(--clay);
+  font-size: 0.96rem;
+  font-weight: 700;
+  margin: 0;
+  max-width: min(100%, 24rem);
+  padding: 0.58rem 1rem;
+  text-align: center;
 }
 
 .board-row {
