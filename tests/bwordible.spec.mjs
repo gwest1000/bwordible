@@ -70,31 +70,36 @@ function getWrongGuess(length, answer) {
   return match.word;
 }
 
-test("renders the correct blocked tiles and summary for a 4-letter daily puzzle", async ({ page }) => {
+test("renders a centered board with only the active word columns", async ({ page }) => {
   const todayKey = findDateByLength(4);
   const puzzle = getPuzzle(todayKey);
 
   await page.setViewportSize({ width: 1440, height: 1080 });
   await page.goto(`/?today=${todayKey}`);
 
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("MannaGrams");
+  await expect(page.locator(".brand-subtitle")).toHaveText("Your Daily Bible Word Game");
   await expect(page.getByTestId("today-summary")).toContainText(`Today: ${formatSummaryDate(todayKey)}`);
   await expect(page.getByTestId("today-summary")).toContainText(
     `${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses`,
   );
-  await expect(page.locator('[data-testid="board"] .tile.blocked')).toHaveCount(
-    (6 - puzzle.length) * puzzle.maxGuesses,
-  );
-  await expect(page.locator('.board-row').first().locator('.tile').first()).not.toHaveClass(/blocked/);
-  await expect(page.locator('.board-row').first().locator('.tile').last()).toHaveClass(/blocked/);
+  await expect(page.locator('[data-testid="board"] .tile.blocked')).toHaveCount(0);
+  await expect(page.locator(".board-row")).toHaveCount(puzzle.maxGuesses);
+  await expect(page.locator(".board-row").first().locator(".tile")).toHaveCount(puzzle.length);
+  await expect(page.locator("#shareButton")).toBeDisabled();
 
   const brandBox = await page.locator(".brand-card").boundingBox();
+  const brandLockupBox = await page.locator(".brand-lockup").boundingBox();
   const gamePanelBox = await page.locator(".game-panel").boundingBox();
   const boardCardBox = await page.locator(".board-card").boundingBox();
 
   expect(brandBox).not.toBeNull();
+  expect(brandLockupBox).not.toBeNull();
   expect(gamePanelBox).not.toBeNull();
   expect(boardCardBox).not.toBeNull();
   expect(brandBox.x + brandBox.width).toBeLessThanOrEqual(gamePanelBox.x - 8);
+  expect(brandLockupBox.x).toBeGreaterThanOrEqual(brandBox.x);
+  expect(brandLockupBox.x + brandLockupBox.width).toBeLessThanOrEqual(brandBox.x + brandBox.width);
   expect(boardCardBox.x).toBeGreaterThan(gamePanelBox.x);
 });
 
@@ -136,6 +141,26 @@ test("adapts cleanly to tablet and phone widths", async ({ page }) => {
   const statsButtonBox = await page.locator("#statsButton").boundingBox();
   const shareButtonBox = await page.locator("#shareButton").boundingBox();
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  const narrowBrandTextAlign = await page.locator(".brand-card").evaluate((element) => {
+    return getComputedStyle(element).textAlign;
+  });
+  const narrowLockupJustification = await page.locator(".brand-lockup").evaluate((element) => {
+    return getComputedStyle(element).justifyContent;
+  });
+  const narrowActionsJustification = await page.locator(".hero-actions").evaluate((element) => {
+    return getComputedStyle(element).justifyContent;
+  });
+  const narrowBoardFit = await page.locator(".board-card").evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  const narrowKeyboardFit = await page.locator(".keyboard-card").evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  const narrowKeyHeight = await page.locator(".key").first().evaluate((element) => {
+    return element.getBoundingClientRect().height;
+  });
 
   expect(gamePanelBox.y).toBeGreaterThan(brandBox.y + brandBox.height - 2);
   expect(statsBox.y).toBeGreaterThan(gamePanelBox.y + gamePanelBox.height - 2);
@@ -145,12 +170,72 @@ test("adapts cleanly to tablet and phone widths", async ({ page }) => {
   expect(pageWidth).toBeLessThanOrEqual(391);
   expect(boardBox.x + boardBox.width).toBeLessThanOrEqual(390);
   expect(keyboardBox.x + keyboardBox.width).toBeLessThanOrEqual(390);
+  expect(narrowBrandTextAlign).toBe("center");
+  expect(narrowLockupJustification).toBe("center");
+  expect(narrowActionsJustification).toBe("center");
+  expect(narrowBoardFit.scrollWidth).toBeLessThanOrEqual(narrowBoardFit.clientWidth);
+  expect(narrowKeyboardFit.scrollWidth).toBeLessThanOrEqual(narrowKeyboardFit.clientWidth);
+  expect(narrowKeyHeight).toBeGreaterThanOrEqual(44);
+
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.reload();
+
+  const compactPageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  const compactBoardFit = await page.locator(".board-card").evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  const compactKeyboardFit = await page.locator(".keyboard-card").evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+
+  expect(compactPageWidth).toBeLessThanOrEqual(321);
+  expect(compactBoardFit.scrollWidth).toBeLessThanOrEqual(compactBoardFit.clientWidth);
+  expect(compactKeyboardFit.scrollWidth).toBeLessThanOrEqual(compactKeyboardFit.clientWidth);
 });
 
-test("solves the ranked daily puzzle and persists stats", async ({ page }) => {
+test("records one letter when a touch is followed by its synthetic click", async ({ page }) => {
+  const todayKey = findDateByLength(4);
+
+  await page.goto(`/?today=${todayKey}`);
+  await waitForPuzzleReady(page, todayKey);
+
+  const aKey = page.locator('.key[data-key="A"]');
+  await aKey.dispatchEvent("touchend");
+  await aKey.click();
+
+  await expect(page.locator('[data-testid="board"] .tile.filled')).toHaveCount(1);
+  await expect(page.locator('[data-testid="board"] .tile.filled .tile-letter')).toHaveText("A");
+
+  await page.keyboard.type("B");
+  await expect(page.locator('[data-testid="board"] .tile.filled')).toHaveCount(2);
+  await expect(page.locator('[data-testid="board"] .tile.filled .tile-letter')).toHaveText(["A", "B"]);
+});
+
+test("installs and reloads as an offline-capable app", async ({ context, page }) => {
+  const todayKey = "2026-03-01";
+
+  await page.goto(`/?today=${todayKey}`);
+  await waitForPuzzleReady(page, todayKey);
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
+  await page.reload();
+  await waitForPuzzleReady(page, todayKey);
+
+  await context.setOffline(true);
+  await page.reload();
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("MannaGrams");
+  await waitForPuzzleReady(page, todayKey);
+});
+
+test("solves, shares, and persists the ranked daily puzzle", async ({ context, page }) => {
   const todayKey = "2026-03-01";
   const puzzle = getPuzzle(todayKey);
 
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], {
+    origin: "http://127.0.0.1:4173",
+  });
   await page.goto(`/?today=${todayKey}`);
   await expect(page.getByTestId("today-summary")).toContainText(`${puzzle.length}-letter word`);
 
@@ -158,9 +243,59 @@ test("solves the ranked daily puzzle and persists stats", async ({ page }) => {
   await page.keyboard.press("Enter");
 
   await expect(page.locator('[data-testid="board"] .tile.celebrate')).toHaveCount(puzzle.length);
+  await expect(page.locator('[data-testid="board"] .tile.correct .tile-symbol')).toHaveCount(puzzle.length);
+  await expect(page.locator('[data-testid="board"] .tile.correct .tile-symbol').first()).toHaveText("✓");
+  await expect(page.locator('[data-testid="board"] .tile.correct').first()).toHaveAttribute(
+    "aria-label",
+    /right letter, right place/,
+  );
   await expect(page.locator("#toast")).toContainText("Solved");
-  await expect(page.getByTestId("current-streak")).toHaveText("1");
+  await expect(page.getByTestId("win-streak")).toHaveText("1");
+  await expect(page.getByTestId("play-streak")).toHaveText("1");
   await expect(page.locator("#statsDialog")).not.toHaveJSProperty("open", true);
+  await expect(page.locator("#shareButton")).toBeEnabled();
+  await expect(page.locator("#shareButton")).toHaveClass(/primary-button/);
+  await expect(page.getByTestId("result-banner")).toContainText(puzzle.answer);
+  await expect(page.getByTestId("result-banner")).toContainText(`1/${puzzle.maxGuesses} guesses`);
+  await expect(page.locator("#nextPuzzleCountdown")).toHaveText("Preview puzzle");
+
+  await page.locator("#shareButton").click();
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain("MannaGrams");
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain("[✓]");
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain("[↔] wrong place");
+
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "canShare", {
+      configurable: true,
+      value: ({ files }) => files?.[0]?.type === "image/png",
+    });
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: async (data) => {
+        window.__sharedResult = {
+          fileCount: data.files?.length ?? 0,
+          fileSize: data.files?.[0]?.size ?? 0,
+          fileType: data.files?.[0]?.type ?? "",
+          text: data.text ?? "",
+        };
+      },
+    });
+  });
+  await page.locator("#shareButton").click();
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.fileCount)).toBe(1);
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.fileType)).toBe("image/png");
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.fileSize)).toBeGreaterThan(1000);
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.text)).toContain("[✓]");
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.text)).toContain("[↔] wrong place");
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.text)).not.toContain("✅");
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.text)).not.toContain("🔶");
+  await expect.poll(() => page.evaluate(() => window.__sharedResult?.text)).not.toContain("❌");
 
   const saved = await page.evaluate((storageKey) => {
     return JSON.parse(localStorage.getItem(storageKey));
@@ -184,11 +319,12 @@ test("shows the answer after a losing puzzle", async ({ page }) => {
     await page.keyboard.press("Enter");
   }
 
-  await expect(page.getByTestId("result-banner")).toContainText(`The word was ${puzzle.answer}.`);
+  await expect(page.getByTestId("result-banner")).toContainText(puzzle.answer);
+  await expect(page.getByTestId("result-banner")).toContainText("Not solved");
   await expect(page.locator("#toast")).toContainText(`The word was ${puzzle.answer}.`);
 });
 
-test("keeps the career streak across skipped days", async ({ page }) => {
+test("keeps the win streak across skipped days while the play streak resets", async ({ page }) => {
   const firstDate = "2026-03-01";
   const secondDate = "2026-03-03";
   const firstPuzzle = getPuzzle(firstDate);
@@ -198,13 +334,15 @@ test("keeps the career streak across skipped days", async ({ page }) => {
   await waitForPuzzleReady(page, firstDate);
   await page.keyboard.type(firstPuzzle.answer);
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("current-streak")).toHaveText("1");
+  await expect(page.getByTestId("win-streak")).toHaveText("1");
+  await expect(page.getByTestId("play-streak")).toHaveText("1");
 
   await page.goto(`/?today=${secondDate}`);
   await waitForPuzzleReady(page, secondDate);
   await page.keyboard.type(secondPuzzle.answer);
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("current-streak")).toHaveText("2");
+  await expect(page.getByTestId("win-streak")).toHaveText("2");
+  await expect(page.getByTestId("play-streak")).toHaveText("1");
 
   const saved = await page.evaluate((storageKey) => {
     return JSON.parse(localStorage.getItem(storageKey));
@@ -212,6 +350,7 @@ test("keeps the career streak across skipped days", async ({ page }) => {
 
   expect(saved.stats.currentStreak).toBe(2);
   expect(saved.stats.maxStreak).toBe(2);
+  expect(saved.stats.playStreak).toBe(1);
 });
 
 test("renders the streak calendar from saved multi-day results", async ({ page }) => {
@@ -271,5 +410,6 @@ test("renders the streak calendar from saved multi-day results", async ({ page }
   expect(Number(strongerWin)).toBeGreaterThan(Number(weakerWin));
   await expect(page.locator('[data-testid="streak-calendar"] .day-cell.lost[data-date="2026-03-09"]')).toBeVisible();
   await expect(page.locator('[data-testid="streak-calendar"] .day-cell.today[data-date="2026-03-10"]')).toBeVisible();
-  await expect(page.getByTestId("current-streak")).toHaveText("0");
+  await expect(page.getByTestId("win-streak")).toHaveText("0");
+  await expect(page.getByTestId("play-streak")).toHaveText("3");
 });

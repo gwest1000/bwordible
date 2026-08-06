@@ -11,6 +11,7 @@ import {
 
 const ANSWERS_PATH = "./jwordl_tier1_expanded_core_vocab_4to6.json";
 const GUESSES_PATH = "./bwordible_allowed_guesses_4to6.json";
+// Keep the legacy key so existing players retain their progress after the rename.
 const STORAGE_KEY = "bwordible-state-v2";
 const CALENDAR_WINDOW_DAYS = 35;
 const KEYBOARD_ROWS = [
@@ -23,20 +24,40 @@ const STATUS_RANK = {
   present: 2,
   correct: 3,
 };
+const STATUS_SYMBOL = {
+  absent: "×",
+  present: "↔",
+  correct: "✓",
+};
+const SHARE_TEXT_SYMBOL = {
+  absent: "×",
+  present: "↔",
+  correct: "✓",
+};
+const SHARE_TEXT_LEGEND = "[✓] correct spot · [↔] wrong place · [×] not present";
+const STATUS_LABEL = {
+  absent: "not present",
+  present: "right letter, wrong place",
+  correct: "right letter, right place",
+};
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const elements = {
-  bestStreak: document.querySelector("#bestStreak"),
   board: document.querySelector("#board"),
   calendarRangeLabel: document.querySelector("#calendarRangeLabel"),
-  currentStreak: document.querySelector("#currentStreak"),
   distribution: document.querySelector("#distribution"),
   helpButton: document.querySelector("#helpButton"),
   helpDialog: document.querySelector("#helpDialog"),
   keyboard: document.querySelector("#keyboard"),
+  nextPuzzleCountdown: document.querySelector("#nextPuzzleCountdown"),
+  playStreak: document.querySelector("#playStreak"),
   playedCount: document.querySelector("#playedCount"),
-  resultBanner: document.querySelector("#resultBanner"),
+  resultLabel: document.querySelector("#resultLabel"),
+  resultPanel: document.querySelector("#resultPanel"),
+  resultScore: document.querySelector("#resultScore"),
+  resultShareButton: document.querySelector("#resultShareButton"),
+  resultWord: document.querySelector("#resultWord"),
   shareButton: document.querySelector("#shareButton"),
   statsAverage: document.querySelector("#statsAverage"),
   statsButton: document.querySelector("#statsButton"),
@@ -44,17 +65,21 @@ const elements = {
   statsCalendarRangeLabel: document.querySelector("#statsCalendarRangeLabel"),
   statsDialog: document.querySelector("#statsDialog"),
   statsMaxStreak: document.querySelector("#statsMaxStreak"),
+  statsPlayStreak: document.querySelector("#statsPlayStreak"),
   statsPlayed: document.querySelector("#statsPlayed"),
+  statsWinStreak: document.querySelector("#statsWinStreak"),
   statsWins: document.querySelector("#statsWins"),
   streakCalendar: document.querySelector("#streakCalendar"),
   toast: document.querySelector("#toast"),
   todaySummary: document.querySelector("#todaySummary"),
   winRate: document.querySelector("#winRate"),
+  winStreak: document.querySelector("#winStreak"),
 };
 
 const appState = {
   answers: [],
   allowedByLength: new Map(),
+  countdownTimer: null,
   keyFlashTimer: null,
   puzzle: null,
   ready: false,
@@ -71,7 +96,7 @@ init().catch((error) => {
     window.location.protocol === "file:"
       ? " Open the folder through a local web server because browsers block JSON loading over file://."
       : "";
-  showToast(`Unable to load the bWORDibLE data files.${localFileHint}`, 5000);
+  showToast(`Unable to load the MannaGrams data files.${localFileHint}`, 5000);
   elements.todaySummary.textContent = "Today: unavailable";
 });
 
@@ -108,18 +133,39 @@ async function init() {
 
   startGame();
   document.body.classList.add("app-ready");
+  registerServiceWorker();
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  const register = () => {
+    navigator.serviceWorker.register("./sw.js").catch((error) => {
+      console.warn("MannaGrams offline mode could not start.", error);
+    });
+  };
+
+  if (document.readyState === "complete") {
+    register();
+    return;
+  }
+
+  window.addEventListener("load", register, { once: true });
 }
 
 function attachEvents() {
   document.addEventListener("keydown", handlePhysicalKeyboard);
+  document.addEventListener("visibilitychange", handleVisibilityChange);
   elements.helpButton.addEventListener("click", () => elements.helpDialog.showModal());
   elements.statsButton.addEventListener("click", () => {
     renderStats();
     elements.statsDialog.showModal();
   });
   elements.shareButton.addEventListener("click", handleShare);
+  elements.resultShareButton.addEventListener("click", handleShare);
   elements.keyboard.addEventListener("click", handleVirtualKeyboard);
-  elements.keyboard.addEventListener("touchend", handleVirtualKeyboardTouch, { passive: false });
 }
 
 function startGame() {
@@ -139,9 +185,27 @@ function startGame() {
 
   renderTodaySummary();
   renderBoard();
-  renderResultBanner();
+  renderResultPanel();
   renderKeyboard(getKeyboardStatuses(), null);
   renderStats();
+  renderShareState();
+  startRolloverMonitor();
+}
+
+function handleVisibilityChange() {
+  if (!document.hidden && appState.ready) {
+    updateNextPuzzleCountdown();
+  }
+}
+
+function startRolloverMonitor() {
+  clearInterval(appState.countdownTimer);
+
+  if (appState.simulatedTodayKey) {
+    return;
+  }
+
+  appState.countdownTimer = setInterval(updateNextPuzzleCountdown, 60_000);
 }
 
 function renderTodaySummary() {
@@ -158,12 +222,15 @@ function handlePhysicalKeyboard(event) {
     return;
   }
 
-  if (event.ctrlKey || event.metaKey || event.altKey) {
+  if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) {
     return;
   }
 
-  if (document.activeElement?.tagName === "BUTTON") {
-    document.activeElement.blur();
+  if (
+    event.target instanceof HTMLButtonElement &&
+    (event.key === "Enter" || event.key === " ")
+  ) {
+    return;
   }
 
   if (elements.helpDialog.open || elements.statsDialog.open) {
@@ -199,21 +266,10 @@ function handleVirtualKeyboard(event) {
     return;
   }
 
-  if (event.type === "click" && event.detail === 0) {
-    return;
-  }
-
   pressVirtualKey(button.dataset.key);
-}
-
-function handleVirtualKeyboardTouch(event) {
-  const button = event.target.closest("button[data-key]");
-  if (!button || !appState.ready) {
-    return;
+  if (event.detail > 0) {
+    button.blur();
   }
-
-  event.preventDefault();
-  pressVirtualKey(button.dataset.key);
 }
 
 function pressVirtualKey(key) {
@@ -302,9 +358,10 @@ function submitGuess() {
 
   persistSave();
   renderBoard({ revealRowIndex: progress.guesses.length - 1 });
-  renderResultBanner();
+  renderResultPanel();
   renderKeyboard(getKeyboardStatuses(), null);
   renderStats();
+  renderShareState();
 
   if (progress.won) {
     queueWinCelebration(progress.guesses.length - 1);
@@ -320,41 +377,45 @@ function renderBoard(options = {}) {
   const evaluations = progress.guesses.map((guess) => evaluateGuess(guess, puzzle.answer));
 
   elements.board.innerHTML = "";
+  elements.board.dataset.wordLength = String(puzzle.length);
 
   for (let rowIndex = 0; rowIndex < puzzle.maxGuesses; rowIndex += 1) {
     const row = document.createElement("div");
     row.className = "board-row";
+    row.style.setProperty("--word-length", String(puzzle.length));
 
     const guess = progress.guesses[rowIndex] ?? "";
     const activeWord = !progress.completed && rowIndex === progress.guesses.length ? progress.currentGuess : "";
     const letters = guess || activeWord;
     const statuses = evaluations[rowIndex] ?? [];
 
-    for (let columnIndex = 0; columnIndex < 6; columnIndex += 1) {
+    for (let columnIndex = 0; columnIndex < puzzle.length; columnIndex += 1) {
       const tile = document.createElement("div");
       tile.className = "tile";
-
-      if (columnIndex >= puzzle.length) {
-        tile.classList.add("blocked");
-        tile.setAttribute("aria-hidden", "true");
-        row.appendChild(tile);
-        continue;
-      }
 
       const letterIndex = columnIndex;
       const letter = letters[letterIndex] ?? "";
       const status = statuses[letterIndex];
 
-      tile.textContent = letter;
       tile.dataset.row = String(rowIndex);
       tile.dataset.col = String(columnIndex);
 
       if (letter) {
+        const letterElement = document.createElement("span");
+        letterElement.className = "tile-letter";
+        letterElement.textContent = letter;
+        tile.appendChild(letterElement);
         tile.classList.add("filled");
       }
 
       if (status) {
+        const symbol = document.createElement("span");
+        symbol.className = "tile-symbol";
+        symbol.setAttribute("aria-hidden", "true");
+        symbol.textContent = STATUS_SYMBOL[status];
+        tile.prepend(symbol);
         tile.classList.add(status);
+        tile.setAttribute("aria-label", `${letter}: ${STATUS_LABEL[status]}`);
         if (rowIndex === revealRowIndex) {
           tile.classList.add("reveal");
           tile.style.animationDelay = `${letterIndex * 90}ms`;
@@ -393,17 +454,71 @@ function queueWinCelebration(rowIndex) {
   }, delay);
 }
 
-function renderResultBanner() {
+function renderResultPanel() {
   const progress = getProgress();
 
-  if (!progress.completed || progress.won) {
-    elements.resultBanner.hidden = true;
-    elements.resultBanner.textContent = "";
+  if (!progress.completed) {
+    elements.resultPanel.hidden = true;
     return;
   }
 
-  elements.resultBanner.hidden = false;
-  elements.resultBanner.textContent = `The word was ${appState.puzzle.answer}.`;
+  const result = progress.won
+    ? `${progress.guesses.length}/${appState.puzzle.maxGuesses} guesses`
+    : "Not solved";
+
+  elements.resultPanel.hidden = false;
+  elements.resultPanel.classList.toggle("won", progress.won);
+  elements.resultPanel.classList.toggle("lost", !progress.won);
+  elements.resultLabel.textContent = progress.won ? "Solved" : "Today’s word";
+  elements.resultWord.textContent = appState.puzzle.answer;
+  elements.resultScore.textContent = result;
+
+  updateNextPuzzleCountdown();
+}
+
+function renderShareState() {
+  const completed = getProgress().completed;
+  elements.shareButton.disabled = !completed;
+  elements.shareButton.title = completed ? "Share your result" : "Finish the puzzle to share";
+  elements.shareButton.classList.toggle("primary-button", completed);
+  elements.shareButton.classList.toggle("ghost-button", !completed);
+}
+
+function updateNextPuzzleCountdown() {
+  if (appState.simulatedTodayKey) {
+    elements.nextPuzzleCountdown.textContent = "Preview puzzle";
+    return;
+  }
+
+  const now = new Date();
+  const currentDateKey = getDateKeyInTimeZone(now, TIME_ZONE);
+  if (currentDateKey !== appState.todayKey) {
+    window.location.reload();
+    return;
+  }
+
+  const remaining = Math.max(0, findNextPuzzleTime(now).getTime() - now.getTime());
+  const totalMinutes = Math.ceil(remaining / 60_000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  elements.nextPuzzleCountdown.textContent = `Next puzzle in ${hours}h ${minutes}m`;
+}
+
+function findNextPuzzleTime(now) {
+  const currentDateKey = getDateKeyInTimeZone(now, TIME_ZONE);
+  let lower = now.getTime();
+  let upper = lower + 30 * 60 * 60 * 1000;
+
+  while (upper - lower > 1_000) {
+    const midpoint = Math.floor((lower + upper) / 2);
+    if (getDateKeyInTimeZone(new Date(midpoint), TIME_ZONE) === currentDateKey) {
+      lower = midpoint;
+    } else {
+      upper = midpoint;
+    }
+  }
+
+  return new Date(upper);
 }
 
 function celebrateWin(rowIndex) {
@@ -428,15 +543,20 @@ function renderKeyboard(statuses, pressedKey) {
       button.className = "key";
       button.dataset.key = key;
       button.type = "button";
-      button.textContent = key === "BACKSPACE" ? "Delete" : key;
+      button.textContent = key === "BACKSPACE" ? "⌫" : key;
 
       if (key === "ENTER" || key === "BACKSPACE") {
         button.classList.add("wide");
+      }
+      if (key === "BACKSPACE") {
+        button.setAttribute("aria-label", "Delete");
+        button.title = "Delete";
       }
 
       const status = statuses[key];
       if (status) {
         button.classList.add(status);
+        button.setAttribute("aria-label", `${key}: ${STATUS_LABEL[status]}`);
       }
 
       if (pressedKey === key) {
@@ -457,12 +577,14 @@ function renderStats() {
   const average = stats.wins ? (stats.totalWinningGuesses / stats.wins).toFixed(1) : "-";
   const rangeText = buildCalendarRangeLabel(CALENDAR_WINDOW_DAYS);
 
-  elements.currentStreak.textContent = String(stats.currentStreak);
+  elements.winStreak.textContent = String(stats.currentStreak);
+  elements.playStreak.textContent = String(stats.playStreak);
   elements.winRate.textContent = `${winRate}%`;
   elements.playedCount.textContent = String(stats.played);
-  elements.bestStreak.textContent = String(stats.maxStreak);
   elements.statsPlayed.textContent = String(stats.played);
   elements.statsWins.textContent = String(stats.wins);
+  elements.statsWinStreak.textContent = String(stats.currentStreak);
+  elements.statsPlayStreak.textContent = String(stats.playStreak);
   elements.statsMaxStreak.textContent = String(stats.maxStreak);
   elements.statsAverage.textContent = average;
   elements.calendarRangeLabel.textContent = rangeText;
@@ -541,7 +663,7 @@ function renderActivityCalendar(container, totalDays) {
   container.appendChild(grid);
 }
 
-function handleShare() {
+async function handleShare() {
   if (!appState.ready) {
     return;
   }
@@ -554,11 +676,37 @@ function handleShare() {
 
   const shareText = buildShareText();
 
+  if (navigator.share) {
+    try {
+      const shareImage = await buildShareImage();
+      const shareFile = new File([shareImage], "mannagrams-result.png", {
+        type: "image/png",
+      });
+      const shareData = {
+        text: shareText,
+        title: "MannaGrams",
+      };
+
+      if (navigator.canShare?.({ files: [shareFile] })) {
+        shareData.files = [shareFile];
+      }
+
+      await navigator.share(shareData);
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        return;
+      }
+    }
+  }
+
   if (navigator.clipboard?.writeText) {
-    navigator.clipboard
-      .writeText(shareText)
-      .then(() => showToast("Result copied to clipboard."))
-      .catch(() => showToast(shareText, 5000));
+    try {
+      await navigator.clipboard.writeText(shareText);
+      showToast("Result copied to clipboard.");
+    } catch {
+      showToast(shareText, 5000);
+    }
     return;
   }
 
@@ -572,21 +720,101 @@ function buildShareText() {
   const blockedCount = 6 - puzzle.length;
   const lines = progress.guesses.map((guess) => {
     const statuses = evaluateGuess(guess, puzzle.answer);
-    const filled = statuses
-      .map((status) => {
-        if (status === "correct") {
-          return "🟩";
-        }
-        if (status === "present") {
-          return "🟨";
-        }
-        return "⬜";
-      })
-      .join("");
-    return `${filled}${"⬛".repeat(blockedCount)}`;
+    const filled = statuses.map((status) => `[${SHARE_TEXT_SYMBOL[status]}]`);
+    const blocked = Array.from({ length: blockedCount }, () => "[ ]");
+    return [...filled, ...blocked].join(" ");
   });
 
-  return [`bWORDibLE ${puzzle.displayDate} ${result}`, ...lines].join("\n");
+  return [`MannaGrams ${puzzle.displayDate} ${result}`, ...lines, "", SHARE_TEXT_LEGEND].join("\n");
+}
+
+function buildShareImage() {
+  const puzzle = appState.puzzle;
+  const progress = getProgress();
+  const width = 1080;
+  const tileSize = 118;
+  const tileGap = 22;
+  const rowGap = 22;
+  const top = 250;
+  const height = top + progress.guesses.length * (tileSize + rowGap) + 140;
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  canvas.width = width;
+  canvas.height = height;
+
+  context.fillStyle = "#f6f3ea";
+  context.fillRect(0, 0, width, height);
+
+  context.fillStyle = "#17251e";
+  context.font = '700 72px Georgia, "Times New Roman", serif';
+  context.textAlign = "center";
+  context.fillText("MannaGrams", width / 2, 94);
+
+  const result = progress.won ? `${progress.guesses.length}/${puzzle.maxGuesses}` : `X/${puzzle.maxGuesses}`;
+  context.fillStyle = "#526158";
+  context.font = '500 34px "Avenir Next", "Segoe UI", sans-serif';
+  context.fillText(`${puzzle.displayDate}  •  ${result}`, width / 2, 158);
+
+  const totalRowWidth = puzzle.length * tileSize + (puzzle.length - 1) * tileGap;
+  const left = (width - totalRowWidth) / 2;
+
+  progress.guesses.forEach((guess, rowIndex) => {
+    const statuses = evaluateGuess(guess, puzzle.answer);
+    statuses.forEach((status, columnIndex) => {
+      const x = left + columnIndex * (tileSize + tileGap);
+      const y = top + rowIndex * (tileSize + rowGap);
+      drawShareTile(context, x, y, tileSize, status);
+    });
+  });
+
+  context.fillStyle = "#526158";
+  context.font = '500 28px "Avenir Next", "Segoe UI", sans-serif';
+  context.fillText("Your Daily Bible Word Game", width / 2, height - 56);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+        return;
+      }
+      reject(new Error("Unable to create the share image."));
+    }, "image/png");
+  });
+}
+
+function drawShareTile(context, x, y, size, status) {
+  const colors = {
+    absent: { border: "#c72e32", fill: "#fde8e8" },
+    present: { border: "#db861e", fill: "#fff0d9" },
+    correct: { border: "#128342", fill: "#e3f3e9" },
+  };
+  const color = colors[status];
+  const radius = 22;
+
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.lineTo(x + size - radius, y);
+  context.quadraticCurveTo(x + size, y, x + size, y + radius);
+  context.lineTo(x + size, y + size - radius);
+  context.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
+  context.lineTo(x + radius, y + size);
+  context.quadraticCurveTo(x, y + size, x, y + size - radius);
+  context.lineTo(x, y + radius);
+  context.quadraticCurveTo(x, y, x + radius, y);
+  context.closePath();
+  context.fillStyle = color.fill;
+  context.fill();
+  context.lineWidth = 8;
+  context.strokeStyle = color.border;
+  context.stroke();
+
+  context.fillStyle = color.border;
+  context.font = '900 76px "Arial Black", "Segoe UI Symbol", sans-serif';
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(STATUS_SYMBOL[status], x + size / 2, y + size / 2 + 2);
+  context.textBaseline = "alphabetic";
 }
 
 function flashKey(key) {
@@ -771,6 +999,7 @@ function createDefaultSave() {
       },
       lastCompletedDate: null,
       maxStreak: 0,
+      playStreak: 0,
       played: 0,
       totalWinningGuesses: 0,
       wins: 0,
@@ -779,14 +1008,15 @@ function createDefaultSave() {
 }
 
 function syncDerivedStats(save, throughDateKey = getDateKeyInTimeZone(new Date(), TIME_ZONE)) {
-  const streakSummary = computeCareerStreakSummary(save.puzzles, throughDateKey);
+  const streakSummary = computeWinStreakSummary(save.puzzles, throughDateKey);
   save.stats.currentStreak = streakSummary.currentStreak;
   save.stats.maxStreak = streakSummary.maxStreak;
   save.stats.lastCompletedDate = streakSummary.lastCompletedDate;
+  save.stats.playStreak = computePlayStreak(save.puzzles, throughDateKey);
   return save;
 }
 
-function computeCareerStreakSummary(puzzles, throughDateKey) {
+function computeWinStreakSummary(puzzles, throughDateKey) {
   const rankedResults = Object.entries(puzzles)
     .filter(([dateKey, progress]) => isRankedCompletedProgress(dateKey, progress, throughDateKey))
     .sort(([leftDate], [rightDate]) => compareDateKeys(leftDate, rightDate));
@@ -808,6 +1038,24 @@ function computeCareerStreakSummary(puzzles, throughDateKey) {
   });
 
   return { currentStreak, lastCompletedDate, maxStreak };
+}
+
+function computePlayStreak(puzzles, throughDateKey) {
+  let cursor = throughDateKey;
+  if (!isRankedCompletedProgress(cursor, puzzles[cursor], throughDateKey)) {
+    cursor = shiftDateKey(cursor, -1);
+  }
+
+  let streak = 0;
+  while (
+    compareDateKeys(cursor, START_DATE) >= 0 &&
+    isRankedCompletedProgress(cursor, puzzles[cursor], throughDateKey)
+  ) {
+    streak += 1;
+    cursor = shiftDateKey(cursor, -1);
+  }
+
+  return streak;
 }
 
 function isRankedCompletedProgress(dateKey, progress, throughDateKey) {

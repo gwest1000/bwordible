@@ -3,11 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bWORDibLE</title>
+    <title>MannaGrams — Your Daily Bible Word Game</title>
     <meta
       name="description"
-      content="bWORDibLE is a Bible-themed daily word puzzle with 4 to 6 letter answers."
+      content="MannaGrams is your daily Bible word game, with a new 4 to 6 letter puzzle every day."
     />
+    <meta name="theme-color" content="#174f36" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MannaGrams" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="./styles.css" />
     <script type="module" src="./app.js"></script>
   </head>
@@ -18,8 +25,20 @@
     <div class="app-shell">
       <main class="layout">
         <section class="brand-card reveal reveal-1">
-          <p class="eyebrow">Daily Bible-themed word puzzle</p>
-          <h1>bWORDibLE</h1>
+          <div class="brand-lockup">
+            <img
+              class="brand-app-icon"
+              src="./icons/icon-192.png"
+              width="72"
+              height="72"
+              alt=""
+              aria-hidden="true"
+            />
+            <div>
+              <h1>MannaGrams</h1>
+              <p class="brand-subtitle">Your Daily Bible Word Game</p>
+            </div>
+          </div>
           <p id="todaySummary" class="today-summary" data-testid="today-summary">
             <span class="today-line">Today: Loading...</span>
             <span class="today-meta">Loading...</span>
@@ -28,14 +47,40 @@
           <div class="hero-actions">
             <button id="helpButton" class="ghost-button" type="button">How to play</button>
             <button id="statsButton" class="ghost-button" type="button">Stats</button>
-            <button id="shareButton" class="primary-button" type="button">Share</button>
+            <button
+              id="shareButton"
+              class="ghost-button share-button"
+              type="button"
+              title="Finish the puzzle to share"
+              disabled
+            >
+              Share
+            </button>
           </div>
         </section>
 
         <section class="game-panel reveal reveal-4" aria-label="Game area">
           <section class="board-card" aria-label="Game board">
             <div id="board" class="board" data-testid="board" aria-live="polite"></div>
-            <p id="resultBanner" class="result-banner" data-testid="result-banner" hidden></p>
+            <section
+              id="resultPanel"
+              class="result-panel"
+              data-testid="result-banner"
+              aria-live="polite"
+              hidden
+            >
+              <div class="result-heading">
+                <div>
+                  <p id="resultLabel" class="label">Today’s word</p>
+                  <h2 id="resultWord"></h2>
+                </div>
+                <p id="resultScore" class="result-score"></p>
+              </div>
+              <div class="result-actions">
+                <button id="resultShareButton" class="primary-button" type="button">Share result</button>
+                <p id="nextPuzzleCountdown" class="next-puzzle">Next puzzle at midnight Pacific time</p>
+              </div>
+            </section>
           </section>
 
           <section class="keyboard-card" aria-label="On-screen keyboard">
@@ -45,8 +90,12 @@
 
         <section class="info-card stats-card stat-grid reveal reveal-2">
           <div>
-            <p class="label">Career streak</p>
-            <p id="currentStreak" class="big-stat" data-testid="current-streak">0</p>
+            <p class="label">Win streak</p>
+            <p id="winStreak" class="big-stat" data-testid="win-streak">0</p>
+          </div>
+          <div>
+            <p class="label">Play streak</p>
+            <p id="playStreak" class="big-stat" data-testid="play-streak">0</p>
           </div>
           <div>
             <p class="label">Win rate</p>
@@ -55,10 +104,6 @@
           <div>
             <p class="label">Played</p>
             <p id="playedCount" class="big-stat">0</p>
-          </div>
-          <div>
-            <p class="label">Best streak</p>
-            <p id="bestStreak" class="big-stat">0</p>
           </div>
         </section>
 
@@ -85,33 +130,45 @@
         <div class="modal-header">
           <div>
             <p class="label">Guide</p>
-            <h2>How bWORDibLE works</h2>
+            <h2>How MannaGrams works</h2>
           </div>
           <button class="ghost-button" type="submit">Close</button>
         </div>
 
         <div class="modal-body">
           <p>
-            Each puzzle uses a 6-column board. If the answer is shorter, the right
-            tiles stay blocked and black.
+            Guess today’s 4, 5, or 6 letter Bible word. Type a word, then press
+            Enter to see how close you are.
           </p>
           <ul class="rules">
-            <li>4-letter answer: 6 guesses</li>
-            <li>5-letter answer: 7 guesses</li>
-            <li>6-letter answer: 8 guesses</li>
-            <li>Green means correct letter, correct spot.</li>
-            <li>Yellow means correct letter, wrong spot.</li>
-            <li>Gray means the letter is not in the answer.</li>
+            <li>You get two more guesses than the number of letters.</li>
             <li>Plural words are allowed.</li>
-            <li>
-              Possible answers draw from Bible names, places, topics/themes, and
-              frequently used words in the Bible.
-            </li>
           </ul>
-          <p>
-            The yearly answer cycle begins on March 1, 2026, reshuffles every
-            March 1, and changes daily at midnight UTC-7 (permanent PDT).
-          </p>
+          <div class="evaluation-guide" aria-label="Letter evaluation guide">
+            <div class="evaluation-item">
+              <span class="guide-tile correct"><span class="guide-symbol">✓</span><span>A</span></span>
+              <span><strong>Correct</strong><small>Right letter, right place</small></span>
+            </div>
+            <div class="evaluation-item">
+              <span class="guide-tile present"><span class="guide-symbol">↔</span><span>A</span></span>
+              <span><strong>Close</strong><small>Right letter, wrong place</small></span>
+            </div>
+            <div class="evaluation-item">
+              <span class="guide-tile absent"><span class="guide-symbol">×</span><span>A</span></span>
+              <span><strong>Not present</strong><small>The letter isn’t in the word</small></span>
+            </div>
+          </div>
+          <details class="about-details">
+            <summary>About the daily puzzle</summary>
+            <p>
+              Answers include people, places, books, objects, themes, and
+              familiar words used in the Bible. A new puzzle appears every day
+              at midnight Pacific time, and the answer order reshuffles annually.
+              A win streak counts consecutive wins when you play; skipped days
+              do not break it. A play streak counts consecutive calendar days
+              on which you complete the puzzle.
+            </p>
+          </details>
         </div>
       </form>
     </dialog>
@@ -137,7 +194,15 @@
               <p id="statsWins" class="big-stat">0</p>
             </div>
             <div>
-              <p class="label">Best streak</p>
+              <p class="label">Win streak</p>
+              <p id="statsWinStreak" class="big-stat">0</p>
+            </div>
+            <div>
+              <p class="label">Play streak</p>
+              <p id="statsPlayStreak" class="big-stat">0</p>
+            </div>
+            <div>
+              <p class="label">Best win streak</p>
               <p id="statsMaxStreak" class="big-stat">0</p>
             </div>
             <div>
@@ -165,6 +230,6 @@
       </form>
     </dialog>
 
-    <div id="toast" class="toast" hidden></div>
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
   </body>
 </html>

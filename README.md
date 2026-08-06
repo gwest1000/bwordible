@@ -1,6 +1,10 @@
-# bWORDibLE
+# MannaGrams
 
-bWORDibLE is a Bible-themed daily word puzzle with 4 to 6 letter answers.
+MannaGrams is your daily Bible word game, with 4 to 6 letter answers.
+
+The responsive web app can be installed from a supported browser and keeps
+working offline after its first successful load. Existing player progress is
+preserved under the original browser storage key.
 
 ## Local development
 
