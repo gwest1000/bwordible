@@ -754,6 +754,10 @@ button:focus-visible {
   gap: 1.1rem;
 }
 
+#importFile {
+  max-width: 100%;
+}
+
 .about-details {
   border-top: 1px solid rgba(23, 37, 30, 0.1);
   color: var(--ink-soft);
@@ -1101,7 +1105,7 @@ button:focus-visible {
   }
 
   .modal-card {
-    min-width: min(100vw - 1rem, 42rem);
+    min-width: min(100vw - 2rem, 42rem);
   }
 
   .hero-actions {
