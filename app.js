@@ -1,3 +1,7 @@
+import { STATUS_SYMBOL, evaluateGuess, getKeyboardStatuses } from "./game-engine.mjs";
+import { loadSave, createPuzzleProgress, recordStats, syncDerivedStats, saveProgress, exportProgress, mergeProgressBackup } from "./progress-store.mjs";
+import { shareResult } from "./sharing.mjs";
+import { getAccess, getGuessAllowance } from "./entitlements.mjs";
 import {
   START_DATE,
   TIME_ZONE,
@@ -11,30 +15,12 @@ import {
 
 const ANSWERS_PATH = "./jwordl_tier1_expanded_core_vocab_4to6.json";
 const GUESSES_PATH = "./bwordible_allowed_guesses_4to6.json";
-// Keep the legacy key so existing players retain their progress after the rename.
-const STORAGE_KEY = "bwordible-state-v2";
 const CALENDAR_WINDOW_DAYS = 35;
 const KEYBOARD_ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
   ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
 ];
-const STATUS_RANK = {
-  absent: 1,
-  present: 2,
-  correct: 3,
-};
-const STATUS_SYMBOL = {
-  absent: "×",
-  present: "↔",
-  correct: "✓",
-};
-const SHARE_TEXT_SYMBOL = {
-  absent: "×",
-  present: "↔",
-  correct: "✓",
-};
-const SHARE_TEXT_LEGEND = "[✓] correct spot · [↔] wrong place · [×] not present";
 const STATUS_LABEL = {
   absent: "not present",
   present: "right letter, wrong place",
@@ -59,6 +45,8 @@ const elements = {
   resultShareButton: document.querySelector("#resultShareButton"),
   resultWord: document.querySelector("#resultWord"),
   shareButton: document.querySelector("#shareButton"),
+  exportButton: document.querySelector("#exportButton"),
+  importFile: document.querySelector("#importFile"),
   statsAverage: document.querySelector("#statsAverage"),
   statsButton: document.querySelector("#statsButton"),
   statsCalendar: document.querySelector("#statsCalendar"),
@@ -84,6 +72,8 @@ const appState = {
   puzzle: null,
   ready: false,
   save: loadSave(),
+  // Full testing access until Play Billing is connected; no trial clock starts yet.
+  access: getAccess({ testing: true }),
   simulatedTodayKey: null,
   toastTimer: null,
   winAnimationTimer: null,
@@ -137,7 +127,7 @@ async function init() {
 }
 
 function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) {
+  if (window.Capacitor?.isNativePlatform() || !("serviceWorker" in navigator)) {
     return;
   }
 
@@ -166,12 +156,15 @@ function attachEvents() {
   elements.shareButton.addEventListener("click", handleShare);
   elements.resultShareButton.addEventListener("click", handleShare);
   elements.keyboard.addEventListener("click", handleVirtualKeyboard);
+  elements.exportButton.addEventListener("click", handleExport);
+  elements.importFile.addEventListener("change", handleImport);
 }
 
 function startGame() {
   const puzzleData = selectPuzzleForDateKey(appState.answers, appState.todayKey);
   appState.puzzle = {
     ...puzzleData,
+    maxGuesses: getGuessAllowance(puzzleData.length, appState.access, appState.save.puzzles[appState.todayKey]),
     displayDate: formatDateKey(appState.todayKey, TIME_ZONE),
     isPreview: compareDateKeys(appState.todayKey, START_DATE) < 0,
     key: appState.todayKey,
@@ -180,13 +173,14 @@ function startGame() {
 
   if (!appState.save.puzzles[appState.puzzle.key]) {
     appState.save.puzzles[appState.puzzle.key] = createPuzzleProgress();
-    persistSave();
   }
+  getProgress().maxGuesses = appState.puzzle.maxGuesses;
+  persistSave();
 
   renderTodaySummary();
   renderBoard();
   renderResultPanel();
-  renderKeyboard(getKeyboardStatuses(), null);
+  renderKeyboard(getKeyboardStatuses(getProgress(), appState.puzzle.answer), null);
   renderStats();
   renderShareState();
   startRolloverMonitor();
@@ -346,20 +340,20 @@ function submitGuess() {
     progress.completed = true;
     progress.won = true;
     if (!puzzle.isPreview) {
-      recordStats(progress.guesses.length);
+      recordStats(appState.save, appState.puzzle.key, progress.guesses.length);
     }
   } else if (progress.guesses.length >= puzzle.maxGuesses) {
     progress.completed = true;
     progress.won = false;
     if (!puzzle.isPreview) {
-      recordStats(null);
+      recordStats(appState.save, appState.puzzle.key, null);
     }
   }
 
   persistSave();
   renderBoard({ revealRowIndex: progress.guesses.length - 1 });
   renderResultPanel();
-  renderKeyboard(getKeyboardStatuses(), null);
+  renderKeyboard(getKeyboardStatuses(getProgress(), appState.puzzle.answer), null);
   renderStats();
   renderShareState();
 
@@ -663,165 +657,52 @@ function renderActivityCalendar(container, totalDays) {
   container.appendChild(grid);
 }
 
-async function handleShare() {
-  if (!appState.ready) {
-    return;
-  }
+function handleShare() {
+  if (appState.ready) return shareResult(appState.puzzle, getProgress(), showToast);
+}
 
-  const progress = getProgress();
-  if (!progress.completed) {
-    showToast("Finish the puzzle before sharing.");
-    return;
-  }
-
-  const shareText = buildShareText();
-
-  if (navigator.share) {
-    try {
-      const shareImage = await buildShareImage();
-      const shareFile = new File([shareImage], "mannagrams-result.png", {
-        type: "image/png",
-      });
-      const shareData = {
-        text: shareText,
-        title: "MannaGrams",
-      };
-
-      if (navigator.canShare?.({ files: [shareFile] })) {
-        shareData.files = [shareFile];
-      }
-
-      await navigator.share(shareData);
-      return;
-    } catch (error) {
-      if (error?.name === "AbortError") {
-        return;
-      }
+async function handleExport() {
+  try {
+    const text = exportProgress(appState.save);
+    const filename = `mannagrams-progress-${appState.todayKey}.json`;
+    if (window.Capacitor?.isNativePlatform()) {
+      const { shareFile } = await import("./native.mjs");
+      await shareFile(filename, new Blob([text], { type: "application/json" }));
+    } else {
+      const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     }
+  } catch {
+    showToast("Could not export progress. Please try again.", 4000);
   }
+}
 
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(shareText);
-      showToast("Result copied to clipboard.");
-    } catch {
-      showToast(shareText, 5000);
-    }
-    return;
+async function handleImport() {
+  const file = elements.importFile.files[0];
+  if (!file) return;
+  try {
+    if (file.size > 2_000_000) throw new Error("This backup is too large.");
+    const merged = mergeProgressBackup(appState.save, await file.text());
+    saveProgress(merged);
+    appState.save = merged;
+    startGame();
+    showToast("Progress imported. Your completed games were kept.", 4000);
+  } catch (error) {
+    showToast(error.message || "Could not import progress.", 5000);
+  } finally {
+    elements.importFile.value = "";
   }
-
-  showToast(shareText, 5000);
-}
-
-function buildShareText() {
-  const puzzle = appState.puzzle;
-  const progress = getProgress();
-  const result = progress.won ? `${progress.guesses.length}/${puzzle.maxGuesses}` : `X/${puzzle.maxGuesses}`;
-  const blockedCount = 6 - puzzle.length;
-  const lines = progress.guesses.map((guess) => {
-    const statuses = evaluateGuess(guess, puzzle.answer);
-    const filled = statuses.map((status) => `[${SHARE_TEXT_SYMBOL[status]}]`);
-    const blocked = Array.from({ length: blockedCount }, () => "[ ]");
-    return [...filled, ...blocked].join(" ");
-  });
-
-  return [`MannaGrams ${puzzle.displayDate} ${result}`, ...lines, "", SHARE_TEXT_LEGEND].join("\n");
-}
-
-function buildShareImage() {
-  const puzzle = appState.puzzle;
-  const progress = getProgress();
-  const width = 1080;
-  const tileSize = 118;
-  const tileGap = 22;
-  const rowGap = 22;
-  const top = 250;
-  const height = top + progress.guesses.length * (tileSize + rowGap) + 140;
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-
-  canvas.width = width;
-  canvas.height = height;
-
-  context.fillStyle = "#f6f3ea";
-  context.fillRect(0, 0, width, height);
-
-  context.fillStyle = "#17251e";
-  context.font = '700 72px Georgia, "Times New Roman", serif';
-  context.textAlign = "center";
-  context.fillText("MannaGrams", width / 2, 94);
-
-  const result = progress.won ? `${progress.guesses.length}/${puzzle.maxGuesses}` : `X/${puzzle.maxGuesses}`;
-  context.fillStyle = "#526158";
-  context.font = '500 34px "Avenir Next", "Segoe UI", sans-serif';
-  context.fillText(`${puzzle.displayDate}  •  ${result}`, width / 2, 158);
-
-  const totalRowWidth = puzzle.length * tileSize + (puzzle.length - 1) * tileGap;
-  const left = (width - totalRowWidth) / 2;
-
-  progress.guesses.forEach((guess, rowIndex) => {
-    const statuses = evaluateGuess(guess, puzzle.answer);
-    statuses.forEach((status, columnIndex) => {
-      const x = left + columnIndex * (tileSize + tileGap);
-      const y = top + rowIndex * (tileSize + rowGap);
-      drawShareTile(context, x, y, tileSize, status);
-    });
-  });
-
-  context.fillStyle = "#526158";
-  context.font = '500 28px "Avenir Next", "Segoe UI", sans-serif';
-  context.fillText("Your Daily Bible Word Game", width / 2, height - 56);
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-        return;
-      }
-      reject(new Error("Unable to create the share image."));
-    }, "image/png");
-  });
-}
-
-function drawShareTile(context, x, y, size, status) {
-  const colors = {
-    absent: { border: "#c72e32", fill: "#fde8e8" },
-    present: { border: "#db861e", fill: "#fff0d9" },
-    correct: { border: "#128342", fill: "#e3f3e9" },
-  };
-  const color = colors[status];
-  const radius = 22;
-
-  context.beginPath();
-  context.moveTo(x + radius, y);
-  context.lineTo(x + size - radius, y);
-  context.quadraticCurveTo(x + size, y, x + size, y + radius);
-  context.lineTo(x + size, y + size - radius);
-  context.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
-  context.lineTo(x + radius, y + size);
-  context.quadraticCurveTo(x, y + size, x, y + size - radius);
-  context.lineTo(x, y + radius);
-  context.quadraticCurveTo(x, y, x + radius, y);
-  context.closePath();
-  context.fillStyle = color.fill;
-  context.fill();
-  context.lineWidth = 8;
-  context.strokeStyle = color.border;
-  context.stroke();
-
-  context.fillStyle = color.border;
-  context.font = '900 76px "Arial Black", "Segoe UI Symbol", sans-serif';
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(STATUS_SYMBOL[status], x + size / 2, y + size / 2 + 2);
-  context.textBaseline = "alphabetic";
 }
 
 function flashKey(key) {
   clearTimeout(appState.keyFlashTimer);
-  renderKeyboard(getKeyboardStatuses(), key);
+  renderKeyboard(getKeyboardStatuses(getProgress(), appState.puzzle.answer), key);
   appState.keyFlashTimer = setTimeout(() => {
-    renderKeyboard(getKeyboardStatuses(), null);
+    renderKeyboard(getKeyboardStatuses(getProgress(), appState.puzzle.answer), null);
   }, 130);
 }
 
@@ -829,51 +710,6 @@ function shakeBoard() {
   elements.board.classList.remove("shake");
   void elements.board.offsetWidth;
   elements.board.classList.add("shake");
-}
-
-function getKeyboardStatuses() {
-  const progress = getProgress();
-  const statuses = {};
-
-  progress.guesses.forEach((guess) => {
-    const evaluation = evaluateGuess(guess, appState.puzzle.answer);
-    evaluation.forEach((status, index) => {
-      const letter = guess[index];
-      const existing = statuses[letter];
-      if (!existing || STATUS_RANK[status] > STATUS_RANK[existing]) {
-        statuses[letter] = status;
-      }
-    });
-  });
-
-  return statuses;
-}
-
-function evaluateGuess(guess, answer) {
-  const statuses = Array.from({ length: guess.length }, () => "absent");
-  const remaining = {};
-
-  for (let index = 0; index < answer.length; index += 1) {
-    if (guess[index] === answer[index]) {
-      statuses[index] = "correct";
-    } else {
-      remaining[answer[index]] = (remaining[answer[index]] ?? 0) + 1;
-    }
-  }
-
-  for (let index = 0; index < answer.length; index += 1) {
-    const letter = guess[index];
-    if (statuses[index] === "correct") {
-      continue;
-    }
-
-    if ((remaining[letter] ?? 0) > 0) {
-      statuses[index] = "present";
-      remaining[letter] -= 1;
-    }
-  }
-
-  return statuses;
 }
 
 function buildCalendarRangeLabel(totalDays) {
@@ -895,7 +731,7 @@ function getDayState(dateKey) {
     if (progress.won) {
       return {
         intensity: getWinIntensity(dateKey, progress.guesses.length),
-        guessesText: `${progress.guesses.length}/${selectPuzzleForDateKey(appState.answers, dateKey).maxGuesses}`,
+        guessesText: `${progress.guesses.length}/${progress.maxGuesses ?? selectPuzzleForDateKey(appState.answers, dateKey).maxGuesses}`,
         isToday: dateKey === appState.todayKey,
         type: "won",
       };
@@ -932,6 +768,7 @@ function getWinIntensity(dateKey, guessCount) {
   }
 
   const puzzle = selectPuzzleForDateKey(appState.answers, dateKey);
+  puzzle.maxGuesses = appState.save.puzzles[dateKey]?.maxGuesses ?? puzzle.maxGuesses;
   if (puzzle.maxGuesses <= 1) {
     return 1;
   }
@@ -940,149 +777,12 @@ function getWinIntensity(dateKey, guessCount) {
   return Math.max(0.08, Math.min(1, normalized));
 }
 
-function recordStats(winningGuesses) {
-  const progress = getProgress();
-  const stats = appState.save.stats;
-
-  if (progress.statsRecorded) {
-    return;
-  }
-
-  stats.played += 1;
-
-  if (winningGuesses) {
-    stats.wins += 1;
-    stats.totalWinningGuesses += winningGuesses;
-    stats.distribution[String(winningGuesses)] = (stats.distribution[String(winningGuesses)] ?? 0) + 1;
-  }
-
-  progress.statsRecorded = true;
-  syncDerivedStats(appState.save, appState.puzzle.key);
-}
-
-function loadSave() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return createDefaultSave();
-    }
-
-    const parsed = JSON.parse(raw);
-    const save = {
-      puzzles: parsed.puzzles ?? {},
-      stats: {
-        ...createDefaultSave().stats,
-        ...(parsed.stats ?? {}),
-      },
-    };
-    return syncDerivedStats(save);
-  } catch (error) {
-    console.warn("Failed to load saved game state.", error);
-    return createDefaultSave();
-  }
-}
-
-function createDefaultSave() {
-  return {
-    puzzles: {},
-    stats: {
-      currentStreak: 0,
-      distribution: {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0,
-      },
-      lastCompletedDate: null,
-      maxStreak: 0,
-      playStreak: 0,
-      played: 0,
-      totalWinningGuesses: 0,
-      wins: 0,
-    },
-  };
-}
-
-function syncDerivedStats(save, throughDateKey = getDateKeyInTimeZone(new Date(), TIME_ZONE)) {
-  const streakSummary = computeWinStreakSummary(save.puzzles, throughDateKey);
-  save.stats.currentStreak = streakSummary.currentStreak;
-  save.stats.maxStreak = streakSummary.maxStreak;
-  save.stats.lastCompletedDate = streakSummary.lastCompletedDate;
-  save.stats.playStreak = computePlayStreak(save.puzzles, throughDateKey);
-  return save;
-}
-
-function computeWinStreakSummary(puzzles, throughDateKey) {
-  const rankedResults = Object.entries(puzzles)
-    .filter(([dateKey, progress]) => isRankedCompletedProgress(dateKey, progress, throughDateKey))
-    .sort(([leftDate], [rightDate]) => compareDateKeys(leftDate, rightDate));
-
-  let currentStreak = 0;
-  let maxStreak = 0;
-  let lastCompletedDate = null;
-
-  rankedResults.forEach(([dateKey, progress]) => {
-    lastCompletedDate = dateKey;
-
-    if (progress.won) {
-      currentStreak += 1;
-      maxStreak = Math.max(maxStreak, currentStreak);
-      return;
-    }
-
-    currentStreak = 0;
-  });
-
-  return { currentStreak, lastCompletedDate, maxStreak };
-}
-
-function computePlayStreak(puzzles, throughDateKey) {
-  let cursor = throughDateKey;
-  if (!isRankedCompletedProgress(cursor, puzzles[cursor], throughDateKey)) {
-    cursor = shiftDateKey(cursor, -1);
-  }
-
-  let streak = 0;
-  while (
-    compareDateKeys(cursor, START_DATE) >= 0 &&
-    isRankedCompletedProgress(cursor, puzzles[cursor], throughDateKey)
-  ) {
-    streak += 1;
-    cursor = shiftDateKey(cursor, -1);
-  }
-
-  return streak;
-}
-
-function isRankedCompletedProgress(dateKey, progress, throughDateKey) {
-  return (
-    compareDateKeys(dateKey, START_DATE) >= 0 &&
-    compareDateKeys(dateKey, throughDateKey) <= 0 &&
-    progress?.completed &&
-    (progress.statsRecorded ?? true)
-  );
-}
-
-function createPuzzleProgress() {
-  return {
-    completed: false,
-    currentGuess: "",
-    guesses: [],
-    statsRecorded: false,
-    won: false,
-  };
-}
-
 function getProgress() {
   return appState.save.puzzles[appState.puzzle.key];
 }
 
 function persistSave() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.save));
+  saveProgress(appState.save);
 }
 
 function showToast(message, timeout = 2200) {

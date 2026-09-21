@@ -2,3 +2,7 @@ node_modules
 playwright-report
 test-results
 .DS_Store
+dist/
+*.jks
+*.keystore
+android/key.properties

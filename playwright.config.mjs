@@ -11,7 +11,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "python3 -m http.server 4173",
+    command: `python3 -m http.server 4173 --directory ${process.env.TEST_WEB_DIR === "dist" ? "dist" : "."}`,
     cwd: process.cwd(),
     port: 4173,
     reuseExistingServer: true,

@@ -1,10 +1,14 @@
-const CACHE_NAME = "mannagrams-v9";
+const CACHE_NAME = "mannagrams-v10";
 const APP_ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./puzzle-utils.mjs",
+  "./game-engine.mjs",
+  "./progress-store.mjs",
+  "./sharing.mjs",
+  "./entitlements.mjs",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

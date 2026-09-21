@@ -1,0 +1,7 @@
+{
+  "appId": "com.gwest1000.mannagrams",
+  "appName": "MannaGrams",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" },
+  "android": { "backgroundColor": "#f6f3ea" }
+}
