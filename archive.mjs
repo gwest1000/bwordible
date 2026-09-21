@@ -40,12 +40,12 @@ export function createArchive({ dialog, getSave, getToday, onSelect }) {
       button.type = "button";
       button.className = "archive-day";
       button.dataset.date = dateKey;
-      button.disabled = !isArchiveDate(dateKey, today);
       const progress = archiveProgress(save, dateKey);
+      button.disabled = !isArchiveDate(dateKey, today) || !progress?.completed;
       const daily = save.puzzles[dateKey]?.completed;
       const status = progress?.completed ? (progress.won ? "Solved" : "Not solved")
-        : progress?.guesses.length || progress?.currentGuess ? "In progress" : "Unplayed";
-      const marker = progress?.completed ? (progress.won ? "✓" : "×") : status === "In progress" ? "•" : "";
+        : "Missed";
+      const marker = progress?.completed ? (progress.won ? "✓" : "×") : "";
       button.classList.toggle("won", Boolean(progress?.won));
       button.classList.toggle("lost", Boolean(progress?.completed && !progress.won));
       const day = document.createElement("span");
@@ -55,7 +55,7 @@ export function createArchive({ dialog, getSave, getToday, onSelect }) {
       symbol.textContent = marker;
       symbol.setAttribute("aria-hidden", "true");
       button.append(day, symbol);
-      button.setAttribute("aria-label", `${formatDateKey(dateKey)}: ${button.disabled ? "Unavailable" : `${status}${daily ? " (daily result)" : ""}`}`);
+      button.setAttribute("aria-label", `${formatDateKey(dateKey)}: ${!isArchiveDate(dateKey, today) ? "Unavailable" : `${status}${daily ? " (daily result)" : ""}`}`);
       button.addEventListener("click", () => {
         dialog.close();
         onSelect(dateKey);

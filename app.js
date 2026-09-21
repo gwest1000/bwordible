@@ -105,7 +105,8 @@ async function init() {
   attachEvents();
 
   const params = new URLSearchParams(window.location.search);
-  appState.simulatedTodayKey = sanitizeDateKey(params.get("today"));
+  const localPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname) && !window.Capacitor?.isNativePlatform();
+  appState.simulatedTodayKey = localPreview ? sanitizeDateKey(params.get("today")) : null;
   appState.todayKey = appState.simulatedTodayKey ?? getDateKeyInTimeZone(new Date(), TIME_ZONE);
 
   renderKeyboard({}, null);
@@ -180,7 +181,7 @@ function attachEvents() {
 
 function startGame(dateKey = appState.todayKey) {
   const switchingPuzzle = appState.ready;
-  if (dateKey !== appState.todayKey && (!appState.access.archive || !isArchiveDate(dateKey, appState.todayKey))) {
+  if (dateKey !== appState.todayKey && (!appState.access.archive || !isArchiveDate(dateKey, appState.todayKey) || !archiveProgress(appState.save, dateKey)?.completed)) {
     dateKey = appState.todayKey;
   }
   clearTimeout(appState.winAnimationTimer);
@@ -189,14 +190,6 @@ function startGame(dateKey = appState.todayKey) {
   elements.toast.hidden = true;
   const isArchive = dateKey !== appState.todayKey;
   const puzzleData = selectPuzzleForDateKey(appState.answers, dateKey);
-  if (isArchive && !archiveProgress(appState.save, dateKey)) {
-    const unfinished = appState.save.puzzles[dateKey];
-    appState.save.archive[dateKey] = {
-      ...createPuzzleProgress(),
-      ...(unfinished ? { guesses: [...unfinished.guesses], currentGuess: unfinished.currentGuess } : {}),
-      maxGuesses: puzzleData.maxGuesses,
-    };
-  }
   const progress = isArchive ? archiveProgress(appState.save, dateKey) : appState.save.puzzles[dateKey];
   appState.puzzle = {
     ...puzzleData,

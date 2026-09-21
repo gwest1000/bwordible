@@ -49,17 +49,19 @@ version can still be imported without removing archive history.
 
 ## Puzzle archive
 
-Choose **Archive**, then a past date beginning March 1, 2026. Month arrows navigate
-the calendar; future dates and today's puzzle cannot be selected. Completed daily
-games are displayed without changing their results. Missed or unfinished daily
-puzzles can be played in the archive with the full 6/7/8-guess allowance.
+Choose **Archive**, then a completed past game beginning March 1, 2026. Month
+arrows navigate the calendar. Missed, unfinished, future and today's puzzles
+cannot be selected. The archive is view-only; completed daily games and previously
+completed archive games are displayed without changing their results.
 
-Archive progress survives reloads and offline use. The calendar shows solved,
-unsolved and in-progress games, plus separate archive played/solved totals.
+Saved history survives reloads and offline use. The calendar shows solved and
+unsolved completed games, plus separate totals for previously played archive games.
 Archive results never change daily statistics, win streaks, or play streaks.
 Shares are marked **Archive**. **Back to today** restores the current daily game.
 The archive is included in the current test build; its access check will use
 verified Premium/trial entitlements when billing is connected.
+The `today` date override is available only in a local browser preview, never in
+the Android app or published website.
 
 ## Android testing
 
