@@ -1,4 +1,4 @@
-const CACHE_NAME = "mannagrams-v11";
+const CACHE_NAME = "mannagrams-v12";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const APP_ASSETS = [
   "./progress-store.mjs",
   "./sharing.mjs",
   "./entitlements.mjs",
+  "./archive.mjs",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

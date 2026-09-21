@@ -57,11 +57,15 @@
               Share
             </button>
           </div>
+          <div class="archive-actions">
+            <button id="archiveButton" class="ghost-button" type="button">Archive</button>
+            <button id="todayButton" class="primary-button" type="button" hidden>Back to today</button>
+          </div>
         </section>
 
         <section class="game-panel reveal reveal-4" aria-label="Game area">
           <section class="board-card" aria-label="Game board">
-            <div id="board" class="board" data-testid="board" aria-live="polite"></div>
+            <div id="board" class="board" data-testid="board" aria-live="polite" tabindex="-1"></div>
             <section
               id="resultPanel"
               class="result-panel"
@@ -124,6 +128,24 @@
         </section>
       </main>
     </div>
+
+    <dialog id="archiveDialog" class="modal" aria-labelledby="archiveTitle">
+      <form method="dialog" class="modal-card">
+        <div class="modal-header">
+          <div><p class="label">Premium · Included in this test build</p><h2 id="archiveTitle">Puzzle archive</h2></div>
+          <button class="ghost-button" type="submit">Close</button>
+        </div>
+        <p>Play missed puzzles from March 1, 2026 onward. Completed daily games can be viewed. Archive play has its own record and never changes your daily streaks.</p>
+        <p id="archiveStats" class="mini-copy"></p>
+        <div class="archive-navigation">
+          <button id="archivePrevious" class="ghost-button" type="button" aria-label="Previous month">←</button>
+          <h3 id="archiveMonth" aria-live="polite"></h3>
+          <button id="archiveNext" class="ghost-button" type="button" aria-label="Next month">→</button>
+        </div>
+        <div id="archiveGrid" class="archive-grid"></div>
+        <p class="mini-copy">✓ Solved · × Not solved · • In progress</p>
+      </form>
+    </dialog>
 
     <dialog id="helpDialog" class="modal">
       <form method="dialog" class="modal-card">

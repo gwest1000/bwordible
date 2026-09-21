@@ -34,6 +34,7 @@ Only the runtime files in `dist/` are published.
 - `progress-store.mjs`: saved games, statistics, backup validation and merging
 - `sharing.mjs`: text and image results
 - `entitlements.mjs`: Premium access and guess allowances
+- `archive.mjs`: past-date calendar and archive selection
 - `native.mjs`: Android file and result sharing
 
 ## Moving progress
@@ -43,6 +44,22 @@ then select it under **Stats → Import progress backup** in the Android app.
 Completed games already on the destination are kept. Reimporting a backup does
 not double-count games. Backups contain game history, never subscription rights.
 Android export opens the system share sheet; choose a file destination.
+New backups include archive progress separately. Backups from the earlier web
+version can still be imported without removing archive history.
+
+## Puzzle archive
+
+Choose **Archive**, then a past date beginning March 1, 2026. Month arrows navigate
+the calendar; future dates and today's puzzle cannot be selected. Completed daily
+games are displayed without changing their results. Missed or unfinished daily
+puzzles can be played in the archive with the full 6/7/8-guess allowance.
+
+Archive progress survives reloads and offline use. The calendar shows solved,
+unsolved and in-progress games, plus separate archive played/solved totals.
+Archive results never change daily statistics, win streaks, or play streaks.
+Shares are marked **Archive**. **Back to today** restores the current daily game.
+The archive is included in the current test build; its access check will use
+verified Premium/trial entitlements when billing is connected.
 
 ## Android testing
 
@@ -76,7 +93,7 @@ Remaining release dependencies:
 
 1. Configure the developer account and app in Play Console, signing, and the
    subscription with its trial; integrate verified purchases, restore, and cancellation.
-2. Build the Premium archive and connect access checks and an ad provider. Complete
+2. Connect verified access checks and an ad provider. Complete
    the store listing, privacy policy, data safety declarations and pricing disclosures.
 3. Test on Android devices, including native sharing, importing web history,
    offline launches, purchases, expiry, and refunds. Complete required Play testing.

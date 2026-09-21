@@ -40,7 +40,7 @@ test("invalid or future backups fail atomically and never import purchase rights
   const save = createDefaultSave();
   const original = structuredClone(save);
   const envelope = { app: "MannaGrams", version: 1, puzzles: {} };
-  for (const text of ["not json", "null", JSON.stringify({ ...envelope, version: 2 }),
+  for (const text of ["not json", "null", JSON.stringify({ ...envelope, version: 3 }),
     JSON.stringify({ ...envelope, puzzles: { "2026-02-30": completed("NOAH") } }),
     JSON.stringify({ ...envelope, puzzles: { "2026-03-03": completed("NOAH") } }),
     JSON.stringify({ ...envelope, puzzles: { "2026-03-01": { ...completed("NOAH"), guesses: ["<script>"] } } })]) {
@@ -86,4 +86,18 @@ test("sharing reports the actual allowance without revealing the answer", () => 
   assert.match(text, /1\/4/);
   assert.doesNotMatch(text, /NOAH/);
   assert.match(text, /\[✓\]/);
+});
+
+test("archive backups round-trip separately and legacy backups preserve archive progress", () => {
+  const save = createDefaultSave();
+  save.puzzles["2026-03-01"] = completed("NOAH");
+  save.archive["2026-03-02"] = { ...completed("ADAM"), statsRecorded: false };
+  const restored = mergeProgressBackup(createDefaultSave(), exportProgress(save), "2026-03-03");
+  assert.equal(restored.archive["2026-03-02"].won, true);
+  assert.equal(restored.stats.played, 1);
+  assert.equal(restored.stats.wins, 1);
+  assert.equal(restored.stats.playStreak, 0);
+  const legacy = JSON.stringify({ app: "MannaGrams", version: 1, puzzles: save.puzzles });
+  assert.deepEqual(mergeProgressBackup(restored, legacy, "2026-03-03"), restored);
+  assert.throws(() => mergeProgressBackup(restored, JSON.stringify({ app: "MannaGrams", version: 2, puzzles: {}, archive: [] }), "2026-03-03"));
 });

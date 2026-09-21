@@ -72,7 +72,7 @@ export function buildShareText(puzzle, progress) {
     return [...filled, ...blocked].join(" ");
   });
 
-  return [`MannaGrams ${puzzle.displayDate} ${result}`, ...lines, "", SHARE_TEXT_LEGEND].join("\n");
+  return [`MannaGrams ${puzzle.isArchive ? "Archive · " : ""}${puzzle.displayDate} ${result}`, ...lines, "", SHARE_TEXT_LEGEND].join("\n");
 }
 
 export function buildShareImage(puzzle, progress) {
@@ -99,7 +99,7 @@ export function buildShareImage(puzzle, progress) {
   const result = progress.won ? `${progress.guesses.length}/${puzzle.maxGuesses}` : `X/${puzzle.maxGuesses}`;
   context.fillStyle = "#526158";
   context.font = '500 34px "Avenir Next", "Segoe UI", sans-serif';
-  context.fillText(`${puzzle.displayDate}  •  ${result}`, width / 2, 158);
+  context.fillText(`${puzzle.isArchive ? "Archive · " : ""}${puzzle.displayDate}  •  ${result}`, width / 2, 158);
 
   const totalRowWidth = puzzle.length * tileSize + (puzzle.length - 1) * tileGap;
   const left = (width - totalRowWidth) / 2;

@@ -33,6 +33,7 @@ export function loadSave() {
     const parsed = JSON.parse(raw);
     const save = {
       puzzles: parsed.puzzles ?? {},
+      archive: parsed.archive ?? {},
       stats: {
         ...createDefaultSave().stats,
         ...(parsed.stats ?? {}),
@@ -48,6 +49,7 @@ export function loadSave() {
 export function createDefaultSave() {
   return {
     puzzles: {},
+    archive: {},
     stats: {
       currentStreak: 0,
       distribution: {
@@ -146,7 +148,7 @@ export function saveProgress(save) {
 }
 
 export function exportProgress(save) {
-  return JSON.stringify({ app: "MannaGrams", version: 1, puzzles: save.puzzles }, null, 2);
+  return JSON.stringify({ app: "MannaGrams", version: 2, puzzles: save.puzzles, archive: save.archive ?? {} }, null, 2);
 }
 
 export function mergeProgressBackup(save, text, throughDateKey = getDateKeyInTimeZone()) {
@@ -154,11 +156,30 @@ export function mergeProgressBackup(save, text, throughDateKey = getDateKeyInTim
   if (text.length > 2_000_000) invalid();
   let backup;
   try { backup = JSON.parse(text); } catch { invalid(); }
-  if (backup?.app !== "MannaGrams" || backup.version !== 1 || !backup.puzzles ||
+  if (backup?.app !== "MannaGrams" || ![1, 2].includes(backup.version) || !backup.puzzles ||
       typeof backup.puzzles !== "object" || Array.isArray(backup.puzzles)) invalid();
 
-  const puzzles = { ...save.puzzles };
-  for (const [dateKey, value] of Object.entries(backup.puzzles)) {
+  const puzzles = mergePuzzleRecords(save.puzzles, backup.puzzles, throughDateKey, invalid);
+  const archive = mergePuzzleRecords(save.archive ?? {}, backup.version === 2 ? backup.archive : {}, shiftDateKey(throughDateKey, -1), invalid);
+  const merged = createDefaultSave();
+  merged.puzzles = puzzles;
+  merged.archive = archive;
+  for (const [dateKey, progress] of Object.entries(puzzles)) {
+    if (!isRankedCompletedProgress(dateKey, progress, throughDateKey)) continue;
+    merged.stats.played += 1;
+    if (progress.won) {
+      merged.stats.wins += 1;
+      merged.stats.totalWinningGuesses += progress.guesses.length;
+      merged.stats.distribution[progress.guesses.length] += 1;
+    }
+  }
+  return syncDerivedStats(merged, throughDateKey);
+}
+
+function mergePuzzleRecords(existingPuzzles, incomingPuzzles, throughDateKey, invalid) {
+  if (!incomingPuzzles || typeof incomingPuzzles !== "object" || Array.isArray(incomingPuzzles)) invalid();
+  const puzzles = { ...existingPuzzles };
+  for (const [dateKey, value] of Object.entries(incomingPuzzles)) {
     if (!isValidDateKey(dateKey) || dateKey > throughDateKey || !value ||
         !Array.isArray(value.guesses) || value.guesses.length > 8 ||
         !value.guesses.every((word) => typeof word === "string" && /^[A-Z]{4,6}$/.test(word)) ||
@@ -185,16 +206,5 @@ export function mergeProgressBackup(save, text, throughDateKey = getDateKeyInTim
       puzzles[dateKey] = progress;
     }
   }
-  const merged = createDefaultSave();
-  merged.puzzles = puzzles;
-  for (const [dateKey, progress] of Object.entries(puzzles)) {
-    if (!isRankedCompletedProgress(dateKey, progress, throughDateKey)) continue;
-    merged.stats.played += 1;
-    if (progress.won) {
-      merged.stats.wins += 1;
-      merged.stats.totalWinningGuesses += progress.guesses.length;
-      merged.stats.distribution[progress.guesses.length] += 1;
-    }
-  }
-  return syncDerivedStats(merged, throughDateKey);
+  return puzzles;
 }

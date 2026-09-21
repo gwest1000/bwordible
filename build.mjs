@@ -5,7 +5,7 @@ await mkdir("dist", { recursive: true });
 // Ship only runtime assets, never repository contents or local working files.
 const assets = [
   "index.html", "styles.css", "app.js", "puzzle-utils.mjs", "game-engine.mjs",
-  "progress-store.mjs", "sharing.mjs", "entitlements.mjs", "sw.js",
+  "progress-store.mjs", "sharing.mjs", "entitlements.mjs", "archive.mjs", "sw.js",
   "manifest.webmanifest", "icons", "jwordl_tier1_expanded_core_vocab_4to6.json",
   "bwordible_allowed_guesses_4to6.json",
 ];

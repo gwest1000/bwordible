@@ -2,6 +2,7 @@ import { STATUS_SYMBOL, evaluateGuess, getKeyboardStatuses } from "./game-engine
 import { loadSave, createPuzzleProgress, recordStats, syncDerivedStats, saveProgress, exportProgress, mergeProgressBackup } from "./progress-store.mjs";
 import { shareResult } from "./sharing.mjs";
 import { getAccess, getGuessAllowance } from "./entitlements.mjs";
+import { createArchive, isArchiveDate, archiveProgress } from "./archive.mjs";
 import {
   START_DATE,
   TIME_ZONE,
@@ -45,6 +46,9 @@ const elements = {
   resultShareButton: document.querySelector("#resultShareButton"),
   resultWord: document.querySelector("#resultWord"),
   shareButton: document.querySelector("#shareButton"),
+  archiveButton: document.querySelector("#archiveButton"),
+  archiveDialog: document.querySelector("#archiveDialog"),
+  todayButton: document.querySelector("#todayButton"),
   exportButton: document.querySelector("#exportButton"),
   importFile: document.querySelector("#importFile"),
   statsAverage: document.querySelector("#statsAverage"),
@@ -79,6 +83,13 @@ const appState = {
   winAnimationTimer: null,
   todayKey: null,
 };
+
+const archive = createArchive({
+  dialog: elements.archiveDialog,
+  getSave: () => appState.save,
+  getToday: () => appState.todayKey,
+  onSelect: (dateKey) => startGame(dateKey),
+});
 
 init().catch((error) => {
   console.error(error);
@@ -121,7 +132,8 @@ async function init() {
     ]),
   );
 
-  startGame();
+  const archivedDate = params.get("archive");
+  startGame(isArchiveDate(archivedDate, appState.todayKey) ? archivedDate : appState.todayKey);
   document.body.classList.add("app-ready");
   registerServiceWorker();
 }
@@ -158,24 +170,54 @@ function attachEvents() {
   elements.keyboard.addEventListener("click", handleVirtualKeyboard);
   elements.exportButton.addEventListener("click", handleExport);
   elements.importFile.addEventListener("change", handleImport);
+  elements.archiveButton.addEventListener("click", () => {
+    if (!appState.ready) return;
+    if (!appState.access.archive) return showToast("The archive is included with Premium.");
+    archive.open(appState.puzzle.key);
+  });
+  elements.todayButton.addEventListener("click", () => startGame());
 }
 
-function startGame() {
-  const puzzleData = selectPuzzleForDateKey(appState.answers, appState.todayKey);
+function startGame(dateKey = appState.todayKey) {
+  const switchingPuzzle = appState.ready;
+  if (dateKey !== appState.todayKey && (!appState.access.archive || !isArchiveDate(dateKey, appState.todayKey))) {
+    dateKey = appState.todayKey;
+  }
+  clearTimeout(appState.winAnimationTimer);
+  clearTimeout(appState.keyFlashTimer);
+  clearTimeout(appState.toastTimer);
+  elements.toast.hidden = true;
+  const isArchive = dateKey !== appState.todayKey;
+  const puzzleData = selectPuzzleForDateKey(appState.answers, dateKey);
+  if (isArchive && !archiveProgress(appState.save, dateKey)) {
+    const unfinished = appState.save.puzzles[dateKey];
+    appState.save.archive[dateKey] = {
+      ...createPuzzleProgress(),
+      ...(unfinished ? { guesses: [...unfinished.guesses], currentGuess: unfinished.currentGuess } : {}),
+      maxGuesses: puzzleData.maxGuesses,
+    };
+  }
+  const progress = isArchive ? archiveProgress(appState.save, dateKey) : appState.save.puzzles[dateKey];
   appState.puzzle = {
     ...puzzleData,
-    maxGuesses: getGuessAllowance(puzzleData.length, appState.access, appState.save.puzzles[appState.todayKey]),
-    displayDate: formatDateKey(appState.todayKey, TIME_ZONE),
-    isPreview: compareDateKeys(appState.todayKey, START_DATE) < 0,
-    key: appState.todayKey,
+    maxGuesses: getGuessAllowance(puzzleData.length, appState.access, progress),
+    displayDate: formatDateKey(dateKey, TIME_ZONE),
+    isPreview: compareDateKeys(dateKey, START_DATE) < 0,
+    isArchive,
+    key: dateKey,
   };
   appState.ready = true;
 
-  if (!appState.save.puzzles[appState.puzzle.key]) {
+  if (!isArchive && !appState.save.puzzles[appState.puzzle.key]) {
     appState.save.puzzles[appState.puzzle.key] = createPuzzleProgress();
   }
   getProgress().maxGuesses = appState.puzzle.maxGuesses;
   persistSave();
+  const url = new URL(window.location.href);
+  if (isArchive) url.searchParams.set("archive", dateKey);
+  else url.searchParams.delete("archive");
+  window.history.replaceState(null, "", url);
+  elements.todayButton.hidden = !isArchive;
 
   renderTodaySummary();
   renderBoard();
@@ -184,6 +226,7 @@ function startGame() {
   renderStats();
   renderShareState();
   startRolloverMonitor();
+  if (switchingPuzzle) elements.board.focus({ preventScroll: true });
 }
 
 function handleVisibilityChange() {
@@ -204,9 +247,9 @@ function startRolloverMonitor() {
 
 function renderTodaySummary() {
   const puzzle = appState.puzzle;
-  const dateLabel = formatTodaySummaryDate(appState.todayKey);
+  const dateLabel = formatTodaySummaryDate(puzzle.key);
   elements.todaySummary.innerHTML = [
-    `<span class="today-line">Today: ${dateLabel}</span>`,
+    `<span class="today-line">${puzzle.isArchive ? "Archive" : "Today"}: ${dateLabel}</span>`,
     `<span class="today-meta">${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses</span>`,
   ].join("");
 }
@@ -227,7 +270,7 @@ function handlePhysicalKeyboard(event) {
     return;
   }
 
-  if (elements.helpDialog.open || elements.statsDialog.open) {
+  if (elements.helpDialog.open || elements.statsDialog.open || elements.archiveDialog.open) {
     return;
   }
 
@@ -339,13 +382,13 @@ function submitGuess() {
   if (guess === puzzle.answer) {
     progress.completed = true;
     progress.won = true;
-    if (!puzzle.isPreview) {
+    if (!puzzle.isPreview && !puzzle.isArchive) {
       recordStats(appState.save, appState.puzzle.key, progress.guesses.length);
     }
   } else if (progress.guesses.length >= puzzle.maxGuesses) {
     progress.completed = true;
     progress.won = false;
-    if (!puzzle.isPreview) {
+    if (!puzzle.isPreview && !puzzle.isArchive) {
       recordStats(appState.save, appState.puzzle.key, null);
     }
   }
@@ -463,7 +506,7 @@ function renderResultPanel() {
   elements.resultPanel.hidden = false;
   elements.resultPanel.classList.toggle("won", progress.won);
   elements.resultPanel.classList.toggle("lost", !progress.won);
-  elements.resultLabel.textContent = progress.won ? "Solved" : "Today’s word";
+  elements.resultLabel.textContent = progress.won ? "Solved" : appState.puzzle.isArchive ? "Archive word" : "Today’s word";
   elements.resultWord.textContent = appState.puzzle.answer;
   elements.resultScore.textContent = result;
 
@@ -479,6 +522,11 @@ function renderShareState() {
 }
 
 function updateNextPuzzleCountdown() {
+  if (appState.puzzle?.isArchive) {
+    elements.nextPuzzleCountdown.textContent = "Archive results do not affect daily streaks.";
+    if (!appState.simulatedTodayKey && getDateKeyInTimeZone() !== appState.todayKey) window.location.reload();
+    return;
+  }
   if (appState.simulatedTodayKey) {
     elements.nextPuzzleCountdown.textContent = "Preview puzzle";
     return;
@@ -778,7 +826,7 @@ function getWinIntensity(dateKey, guessCount) {
 }
 
 function getProgress() {
-  return appState.save.puzzles[appState.puzzle.key];
+  return appState.puzzle.isArchive ? archiveProgress(appState.save, appState.puzzle.key) : appState.save.puzzles[appState.puzzle.key];
 }
 
 function persistSave() {
