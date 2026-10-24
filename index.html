@@ -24,19 +24,20 @@
         <header class="brand-card">
           <div class="brand-lockup">
             <img class="brand-app-icon" src="./icons/icon-192.png" width="80" height="80" alt="" />
-            <div><h1>MannaGrams</h1><p class="brand-subtitle">Your Daily Bible Word Game</p></div>
-            <button id="menuButton" class="icon-button menu-button" type="button" aria-label="Open menu" aria-controls="menuDialog" aria-expanded="false">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </button>
-          </div>
-          <div class="puzzle-toolbar">
-            <p id="todaySummary" class="today-summary" data-testid="today-summary"><span class="today-line">Today: Loading...</span><span class="today-meta">Loading...</span></p>
-            <button id="shareButton" class="icon-button share-button" type="button" aria-label="Share result" title="Finish the puzzle to share" disabled>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10.5 6-4M9 13.5l6 4"/></svg>
-            </button>
+            <h1>MannaGrams</h1>
+            <p class="brand-subtitle">Your Daily Bible Word Game</p>
+            <div id="todaySummary" class="today-summary" data-testid="today-summary"><time class="today-line">Loading...</time><span class="today-meta">Loading...</span></div>
+            <div class="header-actions">
+              <button id="shareButton" class="icon-button share-button" type="button" aria-label="Share result" title="Finish the puzzle to share" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10.5 6-4M9 13.5l6 4"/></svg>
+              </button>
+              <button id="menuButton" class="icon-button menu-button" type="button" aria-label="Open menu" aria-controls="menuDialog" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18"/></svg>
+              </button>
+            </div>
           </div>
         </header>
-        <section class="game-panel reveal reveal-4" aria-label="Game area">
+        <section class="game-panel" aria-label="Game area">
           <section class="board-card" aria-label="Game board">
             <div id="board" class="board" data-testid="board" aria-live="polite" tabindex="-1"></div>
             <section

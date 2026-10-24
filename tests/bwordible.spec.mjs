@@ -58,7 +58,7 @@ function formatSummaryDate(dateKey) {
 }
 
 async function waitForPuzzleReady(page, dateKey) {
-  await expect(page.getByTestId("today-summary")).toContainText(`Today: ${formatSummaryDate(dateKey)}`);
+  await expect(page.getByTestId("today-summary")).toContainText(formatSummaryDate(dateKey));
   await expect(page.getByTestId("today-summary")).not.toContainText("Loading");
 }
 

@@ -123,6 +123,12 @@ async function init() {
 
   const archivedDate = params.get("archive");
   startGame();
+  const layoutObserver = new ResizeObserver(scheduleBoardFit);
+  for (const selector of [".brand-card", ".keyboard-card", "#resultPanel"]) {
+    layoutObserver.observe(document.querySelector(selector));
+  }
+  window.addEventListener("resize", scheduleBoardFit);
+  window.visualViewport?.addEventListener("resize", scheduleBoardFit);
   if (isArchiveDate(archivedDate, appState.todayKey) && appState.access.archive) showDayDetails(archivedDate);
   document.body.classList.add("app-ready");
   registerServiceWorker();
@@ -202,6 +208,7 @@ function startGame() {
   renderStats();
   renderShareState();
   startRolloverMonitor();
+  scheduleBoardFit();
   if (switchingPuzzle) elements.board.focus({ preventScroll: true });
 }
 
@@ -225,7 +232,7 @@ function renderTodaySummary() {
   const puzzle = appState.puzzle;
   const dateLabel = formatTodaySummaryDate(puzzle.key);
   elements.todaySummary.innerHTML = [
-    `<span class="today-line">Today: ${dateLabel}</span>`,
+    `<time class="today-line" datetime="${puzzle.key}">${dateLabel}</time>`,
     `<span class="today-meta">${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses</span>`,
   ].join("");
 }
@@ -391,6 +398,7 @@ function renderBoard(options = {}) {
 
   elements.board.innerHTML = "";
   elements.board.dataset.wordLength = String(puzzle.length);
+  elements.board.style.setProperty("--word-length", String(puzzle.length));
 
   for (let rowIndex = 0; rowIndex < puzzle.maxGuesses; rowIndex += 1) {
     const row = document.createElement("div");
@@ -455,6 +463,40 @@ function renderBoard(options = {}) {
 
     elements.board.appendChild(row);
   }
+}
+
+let boardFitFrame;
+function scheduleBoardFit() {
+  cancelAnimationFrame(boardFitFrame);
+  boardFitFrame = requestAnimationFrame(fitBoardToScreen);
+}
+
+function fitBoardToScreen() {
+  if (!appState.ready) return;
+  const card = document.querySelector(".board-card");
+  const keyboard = document.querySelector(".keyboard-card");
+  const panel = document.querySelector(".game-panel");
+  const cardStyle = getComputedStyle(card);
+  const number = (value) => Number.parseFloat(value) || 0;
+  const sideBySide = window.matchMedia("(min-width: 600px) and (max-height: 500px)").matches;
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  const panelGap = number(getComputedStyle(panel).rowGap);
+  const bottomPadding = number(getComputedStyle(document.querySelector(".app-shell")).paddingBottom);
+  const resultHeight = elements.resultPanel.hidden ? 0 :
+    elements.resultPanel.getBoundingClientRect().height + number(cardStyle.rowGap) +
+    number(getComputedStyle(elements.resultPanel).marginTop);
+  const availableHeight = viewportHeight - (card.getBoundingClientRect().top + window.scrollY) -
+    number(cardStyle.paddingTop) - number(cardStyle.paddingBottom) - bottomPadding -
+    (sideBySide ? 0 : keyboard.getBoundingClientRect().height + panelGap) - resultHeight;
+  const availableWidth = card.clientWidth - number(cardStyle.paddingLeft) - number(cardStyle.paddingRight);
+  const gap = number(getComputedStyle(elements.board).rowGap);
+  const { length, maxGuesses } = appState.puzzle;
+  const size = Math.max(32, Math.floor(Math.min(
+    86,
+    (availableWidth - (length - 1) * gap) / length,
+    (availableHeight - (maxGuesses - 1) * gap) / maxGuesses,
+  )));
+  elements.board.style.setProperty("--tile-size", `${size}px`);
 }
 
 function queueWinCelebration(rowIndex) {

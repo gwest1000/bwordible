@@ -66,7 +66,15 @@ the Android app or published website.
 
 For an interactive phone-sized preview in Codex, run the app server and open
 `phone-preview.html`. This development-only page is excluded from Android and
-Pages builds; it embeds the same game layout in a 390px-wide frame.
+Pages builds. Its screen-size selector includes phones and tablets in portrait
+and landscape, using the same game layout at each selected viewport size.
+
+The compact header shows the date at the top right and the word length/guess
+allowance below the subtitle. Grid squares adapt to available width and height,
+including after rotation or completion. Tablet tiles are capped to avoid
+oversized squares. Short landscape phones place the keyboard beside the grid.
+Keys remain at least 44px tall and tiles at least 32px; exceptionally short or
+zoomed views can scroll rather than shrinking below these limits.
 
 ## Android testing
 

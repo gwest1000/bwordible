@@ -84,7 +84,7 @@ test("native app cannot use date override to play missed puzzles", async ({ page
   await page.clock.install({ time: new Date("2026-09-20T19:00:00Z") });
   await page.addInitScript(() => { window.Capacitor = { isNativePlatform: () => true }; });
   await page.goto(`/?today=${yesterday}`);
-  await expect(page.locator("#todaySummary")).toContainText("Today: 20 Sep, 2026");
+  await expect(page.locator("#todaySummary")).toContainText("20 Sep, 2026");
 });
 test("free access cannot open saved history", async ({ page }) => {
   await page.route("**/entitlements.mjs", async route => {
