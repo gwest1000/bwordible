@@ -70,129 +70,43 @@ function getWrongGuess(length, answer) {
   return match.word;
 }
 
-test("renders a centered board with only the active word columns", async ({ page }) => {
+test("keeps the board below a compact header with icon actions", async ({ page }) => {
   const todayKey = findDateByLength(4);
   const puzzle = getPuzzle(todayKey);
-
-  await page.setViewportSize({ width: 1440, height: 1080 });
   await page.goto(`/?today=${todayKey}`);
-
+  await waitForPuzzleReady(page, todayKey);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("MannaGrams");
   await expect(page.locator(".brand-subtitle")).toHaveText("Your Daily Bible Word Game");
-  await expect(page.getByTestId("today-summary")).toContainText(`Today: ${formatSummaryDate(todayKey)}`);
-  await expect(page.getByTestId("today-summary")).toContainText(
-    `${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses`,
-  );
-  await expect(page.locator('[data-testid="board"] .tile.blocked')).toHaveCount(0);
-  await expect(page.locator(".board-row")).toHaveCount(puzzle.maxGuesses);
-  await expect(page.locator(".board-row").first().locator(".tile")).toHaveCount(puzzle.length);
+  await expect(page.getByTestId("today-summary")).toContainText(`${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses`);
+  await expect(page.locator("#board .board-row")).toHaveCount(puzzle.maxGuesses);
+  await expect(page.locator("#board .board-row").first().locator(".tile")).toHaveCount(puzzle.length);
+  await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
   await expect(page.locator("#shareButton")).toBeDisabled();
-
-  const brandBox = await page.locator(".brand-card").boundingBox();
-  const brandLockupBox = await page.locator(".brand-lockup").boundingBox();
-  const gamePanelBox = await page.locator(".game-panel").boundingBox();
-  const boardCardBox = await page.locator(".board-card").boundingBox();
-
-  expect(brandBox).not.toBeNull();
-  expect(brandLockupBox).not.toBeNull();
-  expect(gamePanelBox).not.toBeNull();
-  expect(boardCardBox).not.toBeNull();
-  expect(brandBox.x + brandBox.width).toBeLessThanOrEqual(gamePanelBox.x - 8);
-  expect(brandLockupBox.x).toBeGreaterThanOrEqual(brandBox.x);
-  expect(brandLockupBox.x + brandLockupBox.width).toBeLessThanOrEqual(brandBox.x + brandBox.width);
-  expect(boardCardBox.x).toBeGreaterThan(gamePanelBox.x);
+  await expect(page.locator("#menuDialog")).not.toBeVisible();
 });
 
-test("adapts cleanly to tablet and phone widths", async ({ page }) => {
-  const todayKey = "2026-03-01";
-
-  await page.setViewportSize({ width: 1024, height: 1366 });
-  await page.goto(`/?today=${todayKey}`);
-
-  let brandBox = await page.locator(".brand-card").boundingBox();
-  let statsBox = await page.locator(".stats-card").boundingBox();
-  let calendarBox = await page.locator(".calendar-card").boundingBox();
-  let gamePanelBox = await page.locator(".game-panel").boundingBox();
-  let boardBox = await page.locator('[data-testid="board"]').boundingBox();
-  let keyboardBox = await page.locator("#keyboard").boundingBox();
-
-  expect(brandBox).not.toBeNull();
-  expect(statsBox).not.toBeNull();
-  expect(calendarBox).not.toBeNull();
-  expect(gamePanelBox).not.toBeNull();
-  expect(boardBox).not.toBeNull();
-  expect(keyboardBox).not.toBeNull();
-  expect(gamePanelBox.y).toBeGreaterThan(brandBox.y + brandBox.height - 2);
-  expect(statsBox.y).toBeGreaterThan(gamePanelBox.y + gamePanelBox.height - 2);
-  expect(calendarBox.y).toBeGreaterThan(statsBox.y + statsBox.height - 2);
-  expect(boardBox.width).toBeLessThanOrEqual(1024 - 24);
-  expect(keyboardBox.width).toBeLessThanOrEqual(1024 - 24);
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.reload();
-
-  brandBox = await page.locator(".brand-card").boundingBox();
-  statsBox = await page.locator(".stats-card").boundingBox();
-  calendarBox = await page.locator(".calendar-card").boundingBox();
-  gamePanelBox = await page.locator(".game-panel").boundingBox();
-  boardBox = await page.locator('[data-testid="board"]').boundingBox();
-  keyboardBox = await page.locator("#keyboard").boundingBox();
-  const helpButtonBox = await page.locator("#helpButton").boundingBox();
-  const statsButtonBox = await page.locator("#statsButton").boundingBox();
-  const shareButtonBox = await page.locator("#shareButton").boundingBox();
-  const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  const narrowBrandTextAlign = await page.locator(".brand-card").evaluate((element) => {
-    return getComputedStyle(element).textAlign;
-  });
-  const narrowLockupJustification = await page.locator(".brand-lockup").evaluate((element) => {
-    return getComputedStyle(element).justifyContent;
-  });
-  const narrowActionsJustification = await page.locator(".hero-actions").evaluate((element) => {
-    return getComputedStyle(element).justifyContent;
-  });
-  const narrowBoardFit = await page.locator(".board-card").evaluate((element) => ({
-    clientWidth: element.clientWidth,
-    scrollWidth: element.scrollWidth,
-  }));
-  const narrowKeyboardFit = await page.locator(".keyboard-card").evaluate((element) => ({
-    clientWidth: element.clientWidth,
-    scrollWidth: element.scrollWidth,
-  }));
-  const narrowKeyHeight = await page.locator(".key").first().evaluate((element) => {
-    return element.getBoundingClientRect().height;
-  });
-
-  expect(gamePanelBox.y).toBeGreaterThan(brandBox.y + brandBox.height - 2);
-  expect(statsBox.y).toBeGreaterThan(gamePanelBox.y + gamePanelBox.height - 2);
-  expect(calendarBox.y).toBeGreaterThan(statsBox.y + statsBox.height - 2);
-  expect(Math.abs(helpButtonBox.y - statsButtonBox.y)).toBeLessThanOrEqual(5);
-  expect(Math.abs(statsButtonBox.y - shareButtonBox.y)).toBeLessThanOrEqual(5);
-  expect(pageWidth).toBeLessThanOrEqual(391);
-  expect(boardBox.x + boardBox.width).toBeLessThanOrEqual(390);
-  expect(keyboardBox.x + keyboardBox.width).toBeLessThanOrEqual(390);
-  expect(narrowBrandTextAlign).toBe("center");
-  expect(narrowLockupJustification).toBe("center");
-  expect(narrowActionsJustification).toBe("center");
-  expect(narrowBoardFit.scrollWidth).toBeLessThanOrEqual(narrowBoardFit.clientWidth);
-  expect(narrowKeyboardFit.scrollWidth).toBeLessThanOrEqual(narrowKeyboardFit.clientWidth);
-  expect(narrowKeyHeight).toBeGreaterThanOrEqual(44);
-
-  await page.setViewportSize({ width: 320, height: 720 });
-  await page.reload();
-
-  const compactPageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  const compactBoardFit = await page.locator(".board-card").evaluate((element) => ({
-    clientWidth: element.clientWidth,
-    scrollWidth: element.scrollWidth,
-  }));
-  const compactKeyboardFit = await page.locator(".keyboard-card").evaluate((element) => ({
-    clientWidth: element.clientWidth,
-    scrollWidth: element.scrollWidth,
-  }));
-
-  expect(compactPageWidth).toBeLessThanOrEqual(321);
-  expect(compactBoardFit.scrollWidth).toBeLessThanOrEqual(compactBoardFit.clientWidth);
-  expect(compactKeyboardFit.scrollWidth).toBeLessThanOrEqual(compactKeyboardFit.clientWidth);
+test("fits tablet and phone widths with stats inside a full-screen phone menu", async ({ page }) => {
+  for (const width of [1024, 390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/?today=2026-03-01");
+    await waitForPuzzleReady(page, "2026-03-01");
+    const fit = await page.evaluate(() => ({
+      width: document.documentElement.scrollWidth,
+      boardTop: document.querySelector("#board").getBoundingClientRect().top,
+      keyHeight: document.querySelector(".key").getBoundingClientRect().height,
+    }));
+    expect(fit.width).toBeLessThanOrEqual(width);
+    expect(fit.boardTop).toBeLessThan(200);
+    expect(fit.keyHeight).toBeGreaterThanOrEqual(44);
+    await page.getByRole("button", { name: "Open menu" }).click();
+    await expect(page.getByRole("button", { name: "How to play" })).toBeVisible();
+    await expect(page.locator("#winStreak")).toBeVisible();
+    const box = await page.locator("#menuDialog").boundingBox();
+    if (width <= 560) expect(Math.round(box.width)).toBe(width);
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#menuDialog")).not.toBeVisible();
+    await expect(page.locator("#menuButton")).toBeFocused();
+  }
 });
 
 test("records one letter when a touch is followed by its synthetic click", async ({ page }) => {
@@ -252,7 +166,7 @@ test("solves, shares, and persists the ranked daily puzzle", async ({ context, p
   await expect(page.locator("#toast")).toContainText("Solved");
   await expect(page.getByTestId("win-streak")).toHaveText("1");
   await expect(page.getByTestId("play-streak")).toHaveText("1");
-  await expect(page.locator("#statsDialog")).not.toHaveJSProperty("open", true);
+  await expect(page.locator("#menuDialog")).not.toHaveJSProperty("open", true);
   await expect(page.locator("#shareButton")).toBeEnabled();
   await expect(page.locator("#shareButton")).toHaveClass(/primary-button/);
   await expect(page.getByTestId("result-banner")).toContainText(puzzle.answer);
@@ -399,17 +313,18 @@ test("renders the streak calendar from saved multi-day results", async ({ page }
 
   await page.goto(`/?today=${dateD}`);
   await expect(page.getByTestId("today-summary")).toContainText(`${getPuzzle(dateD).length}-letter word`);
-  await expect(page.locator('[data-testid="streak-calendar"] .day-cell.won[data-date="2026-03-07"]')).toBeVisible();
-  await expect(page.locator('[data-testid="streak-calendar"] .day-cell.won[data-date="2026-03-08"]')).toBeVisible();
+  await page.getByRole("button", { name: "Open menu" }).click();
+  await expect(page.locator('[data-testid="streak-calendar"] .archive-day.won[data-date="2026-03-07"]')).toBeVisible();
+  await expect(page.locator('[data-testid="streak-calendar"] .archive-day.won[data-date="2026-03-08"]')).toBeVisible();
   const strongerWin = await page
-    .locator('[data-testid="streak-calendar"] .day-cell.won[data-date="2026-03-07"]')
+    .locator('[data-testid="streak-calendar"] .archive-day.won[data-date="2026-03-07"]')
     .evaluate((el) => el.style.getPropertyValue("--win-strength"));
   const weakerWin = await page
-    .locator('[data-testid="streak-calendar"] .day-cell.won[data-date="2026-03-08"]')
+    .locator('[data-testid="streak-calendar"] .archive-day.won[data-date="2026-03-08"]')
     .evaluate((el) => el.style.getPropertyValue("--win-strength"));
   expect(Number(strongerWin)).toBeGreaterThan(Number(weakerWin));
-  await expect(page.locator('[data-testid="streak-calendar"] .day-cell.lost[data-date="2026-03-09"]')).toBeVisible();
-  await expect(page.locator('[data-testid="streak-calendar"] .day-cell.today[data-date="2026-03-10"]')).toBeVisible();
+  await expect(page.locator('[data-testid="streak-calendar"] .archive-day.lost[data-date="2026-03-09"]')).toBeVisible();
+  await expect(page.locator('[data-testid="streak-calendar"] .archive-day.today[data-date="2026-03-10"]')).toBeVisible();
   await expect(page.getByTestId("win-streak")).toHaveText("0");
   await expect(page.getByTestId("play-streak")).toHaveText("3");
 });

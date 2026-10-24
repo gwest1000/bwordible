@@ -19,50 +19,23 @@
     <script type="module" src="./app.js"></script>
   </head>
   <body>
-    <div class="background-glow background-glow-left" aria-hidden="true"></div>
-    <div class="background-glow background-glow-right" aria-hidden="true"></div>
-
     <div class="app-shell">
       <main class="layout">
-        <section class="brand-card reveal reveal-1">
+        <header class="brand-card">
           <div class="brand-lockup">
-            <img
-              class="brand-app-icon"
-              src="./icons/icon-192.png"
-              width="72"
-              height="72"
-              alt=""
-              aria-hidden="true"
-            />
-            <div>
-              <h1>MannaGrams</h1>
-              <p class="brand-subtitle">Your Daily Bible Word Game</p>
-            </div>
-          </div>
-          <p id="todaySummary" class="today-summary" data-testid="today-summary">
-            <span class="today-line">Today: Loading...</span>
-            <span class="today-meta">Loading...</span>
-          </p>
-
-          <div class="hero-actions">
-            <button id="helpButton" class="ghost-button" type="button">How to play</button>
-            <button id="statsButton" class="ghost-button" type="button">Stats</button>
-            <button
-              id="shareButton"
-              class="ghost-button share-button"
-              type="button"
-              title="Finish the puzzle to share"
-              disabled
-            >
-              Share
+            <img class="brand-app-icon" src="./icons/icon-192.png" width="80" height="80" alt="" />
+            <div><h1>MannaGrams</h1><p class="brand-subtitle">Your Daily Bible Word Game</p></div>
+            <button id="menuButton" class="icon-button menu-button" type="button" aria-label="Open menu" aria-controls="menuDialog" aria-expanded="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
           </div>
-          <div class="archive-actions">
-            <button id="archiveButton" class="ghost-button" type="button">Archive</button>
-            <button id="todayButton" class="primary-button" type="button" hidden>Back to today</button>
+          <div class="puzzle-toolbar">
+            <p id="todaySummary" class="today-summary" data-testid="today-summary"><span class="today-line">Today: Loading...</span><span class="today-meta">Loading...</span></p>
+            <button id="shareButton" class="icon-button share-button" type="button" aria-label="Share result" title="Finish the puzzle to share" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10.5 6-4M9 13.5l6 4"/></svg>
+            </button>
           </div>
-        </section>
-
+        </header>
         <section class="game-panel reveal reveal-4" aria-label="Game area">
           <section class="board-card" aria-label="Game board">
             <div id="board" class="board" data-testid="board" aria-live="polite" tabindex="-1"></div>
@@ -92,7 +65,14 @@
           </section>
         </section>
 
-        <section class="info-card stats-card stat-grid reveal reveal-2">
+      </main>
+    </div>
+    <dialog id="menuDialog" class="side-menu" aria-labelledby="menuTitle">
+      <div class="menu-content">
+        <div class="menu-heading"><h2 id="menuTitle">Your MannaGrams</h2><button id="closeMenuButton" class="icon-button" type="button" aria-label="Close menu">×</button></div>
+        <button id="helpButton" class="ghost-button menu-help" type="button">How to play <span aria-hidden="true">→</span></button>
+        <h3>Your stats</h3>
+        <section class="stats-card stat-grid">
           <div>
             <p class="label">Win streak</p>
             <p id="winStreak" class="big-stat" data-testid="win-streak">0</p>
@@ -111,42 +91,45 @@
           </div>
         </section>
 
-        <section class="info-card calendar-card reveal reveal-3">
-          <div class="card-header">
-            <div>
-              <p class="label">Streak calendar</p>
-            </div>
-            <p id="calendarRangeLabel" class="mini-copy">Last 35 days</p>
-          </div>
-          <div id="streakCalendar" class="activity-calendar" data-testid="streak-calendar"></div>
-          <div class="legend">
-            <span class="legend-item"><span class="legend-swatch won"></span>Won</span>
-            <span class="legend-item"><span class="legend-swatch lost"></span>Lost</span>
-            <span class="legend-item"><span class="legend-swatch missed"></span>Missed</span>
-            <span class="legend-item"><span class="legend-swatch today"></span>Today</span>
-          </div>
-        </section>
-      </main>
-    </div>
 
-    <dialog id="archiveDialog" class="modal" aria-labelledby="archiveTitle">
+        <div class="record-extras">
+          <div><p class="label">Wins</p><p id="statsWins" class="big-stat">0</p></div>
+          <div><p class="label">Best win streak</p><p id="statsMaxStreak" class="big-stat">0</p></div>
+          <div><p class="label">Average solve</p><p id="statsAverage" class="big-stat">–</p></div>
+        </div>
+        <section id="historyCalendar" class="calendar-card" aria-label="Streak calendar">
+          <h3>Streak calendar</h3>
+          <p class="mini-copy">Tap a day to review your result.</p>
+          <div class="archive-navigation">
+            <button id="archivePrevious" class="icon-button" type="button" aria-label="Previous month">←</button>
+            <h4 id="archiveMonth" aria-live="polite"></h4>
+            <button id="archiveNext" class="icon-button" type="button" aria-label="Next month">→</button>
+          </div>
+          <div id="archiveGrid" class="archive-grid" data-testid="streak-calendar"></div>
+          <p class="mini-copy calendar-legend">✓ Solved · × Not solved · • Unfinished</p>
+        </section>
+        <details class="menu-details"><summary>Guess distribution</summary><div id="distribution" class="distribution"></div></details>
+        <details class="menu-details"><summary>Move or back up progress</summary>
+          <div>
+            <p class="label">Keep your progress</p>
+            <p>Export a backup to move your games to another device. Importing keeps completed games already on this device.</p>
+            <button id="exportButton" class="ghost-button" type="button">Export progress</button>
+            <p><label for="importFile">Import progress backup</label></p>
+            <input id="importFile" type="file" accept=".json,application/json" />
+          </div>
+
+
+        </details>
+      </div>
+    </dialog>
+    <dialog id="dayDialog" class="modal" aria-labelledby="dayTitle">
       <form method="dialog" class="modal-card">
-        <div class="modal-header">
-          <div><p class="label">Premium · Included in this test build</p><h2 id="archiveTitle">Puzzle archive</h2></div>
-          <button class="ghost-button" type="submit">Close</button>
-        </div>
-        <p>Review your completed games from March 1, 2026 onward. Missed and unfinished puzzles cannot be played. Your daily results and streaks stay unchanged.</p>
-        <p id="archiveStats" class="mini-copy"></p>
-        <div class="archive-navigation">
-          <button id="archivePrevious" class="ghost-button" type="button" aria-label="Previous month">←</button>
-          <h3 id="archiveMonth" aria-live="polite"></h3>
-          <button id="archiveNext" class="ghost-button" type="button" aria-label="Next month">→</button>
-        </div>
-        <div id="archiveGrid" class="archive-grid"></div>
-        <p class="mini-copy">✓ Solved · × Not solved · Faded dates unavailable</p>
+        <div class="modal-header"><div><p class="label">Daily history</p><h2 id="dayTitle"></h2></div><button class="ghost-button" type="submit">Close</button></div>
+        <p id="dayStatus"></p>
+        <h3 id="dayWord"></h3>
+        <div id="dayGuesses" class="board history-board" aria-label="Saved guesses"></div>
       </form>
     </dialog>
-
     <dialog id="helpDialog" class="modal">
       <form method="dialog" class="modal-card">
         <div class="modal-header">
@@ -191,71 +174,6 @@
               on which you complete the puzzle.
             </p>
           </details>
-        </div>
-      </form>
-    </dialog>
-
-    <dialog id="statsDialog" class="modal">
-      <form method="dialog" class="modal-card">
-        <div class="modal-header">
-          <div>
-            <p class="label">Record</p>
-            <h2>Your stats</h2>
-          </div>
-          <button class="ghost-button" type="submit">Close</button>
-        </div>
-
-        <div class="modal-body">
-          <div class="stats-overview">
-            <div>
-              <p class="label">Played</p>
-              <p id="statsPlayed" class="big-stat">0</p>
-            </div>
-            <div>
-              <p class="label">Wins</p>
-              <p id="statsWins" class="big-stat">0</p>
-            </div>
-            <div>
-              <p class="label">Win streak</p>
-              <p id="statsWinStreak" class="big-stat">0</p>
-            </div>
-            <div>
-              <p class="label">Play streak</p>
-              <p id="statsPlayStreak" class="big-stat">0</p>
-            </div>
-            <div>
-              <p class="label">Best win streak</p>
-              <p id="statsMaxStreak" class="big-stat">0</p>
-            </div>
-            <div>
-              <p class="label">Average solve</p>
-              <p id="statsAverage" class="big-stat">-</p>
-            </div>
-          </div>
-
-          <div>
-            <p class="label">Keep your progress</p>
-            <p>Export a backup to move your games to another device. Importing keeps completed games already on this device.</p>
-            <button id="exportButton" class="ghost-button" type="button">Export progress</button>
-            <p><label for="importFile">Import progress backup</label></p>
-            <input id="importFile" type="file" accept=".json,application/json" />
-          </div>
-
-          <div>
-            <p class="label">Guess distribution</p>
-            <div id="distribution" class="distribution"></div>
-          </div>
-
-          <div>
-            <div class="card-header">
-              <div>
-                <p class="label">Calendar</p>
-                <h2>Streak map</h2>
-              </div>
-              <p id="statsCalendarRangeLabel" class="mini-copy">Last 35 days</p>
-            </div>
-            <div id="statsCalendar" class="activity-calendar stats-calendar"></div>
-          </div>
         </div>
       </form>
     </dialog>

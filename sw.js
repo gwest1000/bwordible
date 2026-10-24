@@ -1,4 +1,4 @@
-const CACHE_NAME = "mannagrams-v13";
+const CACHE_NAME = "mannagrams-v14";
 const APP_ASSETS = [
   "./",
   "./index.html",

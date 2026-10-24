@@ -17,11 +17,8 @@ export function createArchive({ dialog, getSave, getToday, onSelect }) {
 
   function render() {
     const today = getToday();
-    const latest = shiftDateKey(today, -1).slice(0, 7);
+    const latest = today.slice(0, 7);
     const save = getSave();
-    const completed = Object.values(save.archive).filter((progress) => progress.completed);
-    dialog.querySelector("#archiveStats").textContent =
-      `Archive: ${completed.length} played · ${completed.filter((progress) => progress.won).length} solved`;
     monthLabel.textContent = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
       .format(new Date(`${month}-01T12:00:00Z`));
     previous.disabled = month <= START_DATE.slice(0, 7);
@@ -40,14 +37,20 @@ export function createArchive({ dialog, getSave, getToday, onSelect }) {
       button.type = "button";
       button.className = "archive-day";
       button.dataset.date = dateKey;
-      const progress = archiveProgress(save, dateKey);
-      button.disabled = !isArchiveDate(dateKey, today) || !progress?.completed;
+      const progress = archiveProgress(save, dateKey) ?? save.puzzles[dateKey];
+      button.disabled = dateKey < START_DATE || dateKey > today;
       const daily = save.puzzles[dateKey]?.completed;
       const status = progress?.completed ? (progress.won ? "Solved" : "Not solved")
-        : "Missed";
-      const marker = progress?.completed ? (progress.won ? "✓" : "×") : "";
+        : progress?.guesses.length || progress?.currentGuess ? "Unfinished" : "Not played";
+      const marker = progress?.completed ? (progress.won ? "✓" : "×") : status === "Unfinished" ? "•" : "";
       button.classList.toggle("won", Boolean(progress?.won));
       button.classList.toggle("lost", Boolean(progress?.completed && !progress.won));
+      button.classList.toggle("missed", !progress?.completed);
+      button.classList.toggle("today", dateKey === today);
+      if (progress?.won) {
+        const allowance = progress.maxGuesses ?? (progress.guesses[0]?.length ?? 4) + 2;
+        button.style.setProperty("--win-strength", String(Math.max(0.08, (allowance - progress.guesses.length) / (allowance - 1))));
+      }
       const day = document.createElement("span");
       day.textContent = String(Number(dateKey.slice(-2)));
       const symbol = document.createElement("span");
@@ -55,9 +58,9 @@ export function createArchive({ dialog, getSave, getToday, onSelect }) {
       symbol.textContent = marker;
       symbol.setAttribute("aria-hidden", "true");
       button.append(day, symbol);
-      button.setAttribute("aria-label", `${formatDateKey(dateKey)}: ${!isArchiveDate(dateKey, today) ? "Unavailable" : `${status}${daily ? " (daily result)" : ""}`}`);
+      button.setAttribute("aria-label", `${formatDateKey(dateKey)}: ${button.disabled ? "Unavailable" : `${status}${daily ? " (daily result)" : ""}`}`);
+      button.title = button.getAttribute("aria-label");
       button.addEventListener("click", () => {
-        dialog.close();
         onSelect(dateKey);
       });
       grid.append(button);
@@ -74,10 +77,9 @@ export function createArchive({ dialog, getSave, getToday, onSelect }) {
   next.addEventListener("click", () => moveMonth(1));
   return {
     open(dateKey) {
-      month = (isArchiveDate(dateKey, getToday()) ? dateKey : shiftDateKey(getToday(), -1)).slice(0, 7);
+      month = (isArchiveDate(dateKey, getToday()) ? dateKey : getToday()).slice(0, 7);
       if (month < START_DATE.slice(0, 7)) month = START_DATE.slice(0, 7);
       render();
-      dialog.showModal();
     },
   };
 }

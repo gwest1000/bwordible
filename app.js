@@ -7,16 +7,13 @@ import {
   START_DATE,
   TIME_ZONE,
   compareDateKeys,
-  dateToIndex,
   formatDateKey,
   getDateKeyInTimeZone,
   selectPuzzleForDateKey,
-  shiftDateKey,
 } from "./puzzle-utils.mjs";
 
 const ANSWERS_PATH = "./jwordl_tier1_expanded_core_vocab_4to6.json";
 const GUESSES_PATH = "./bwordible_allowed_guesses_4to6.json";
-const CALENDAR_WINDOW_DAYS = 35;
 const KEYBOARD_ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
@@ -27,12 +24,14 @@ const STATUS_LABEL = {
   present: "right letter, wrong place",
   correct: "right letter, right place",
 };
-const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const elements = {
   board: document.querySelector("#board"),
-  calendarRangeLabel: document.querySelector("#calendarRangeLabel"),
+  menuButton: document.querySelector("#menuButton"),
+  menuDialog: document.querySelector("#menuDialog"),
+  closeMenuButton: document.querySelector("#closeMenuButton"),
+  dayDialog: document.querySelector("#dayDialog"),
   distribution: document.querySelector("#distribution"),
   helpButton: document.querySelector("#helpButton"),
   helpDialog: document.querySelector("#helpDialog"),
@@ -46,22 +45,11 @@ const elements = {
   resultShareButton: document.querySelector("#resultShareButton"),
   resultWord: document.querySelector("#resultWord"),
   shareButton: document.querySelector("#shareButton"),
-  archiveButton: document.querySelector("#archiveButton"),
-  archiveDialog: document.querySelector("#archiveDialog"),
-  todayButton: document.querySelector("#todayButton"),
   exportButton: document.querySelector("#exportButton"),
   importFile: document.querySelector("#importFile"),
   statsAverage: document.querySelector("#statsAverage"),
-  statsButton: document.querySelector("#statsButton"),
-  statsCalendar: document.querySelector("#statsCalendar"),
-  statsCalendarRangeLabel: document.querySelector("#statsCalendarRangeLabel"),
-  statsDialog: document.querySelector("#statsDialog"),
   statsMaxStreak: document.querySelector("#statsMaxStreak"),
-  statsPlayStreak: document.querySelector("#statsPlayStreak"),
-  statsPlayed: document.querySelector("#statsPlayed"),
-  statsWinStreak: document.querySelector("#statsWinStreak"),
   statsWins: document.querySelector("#statsWins"),
-  streakCalendar: document.querySelector("#streakCalendar"),
   toast: document.querySelector("#toast"),
   todaySummary: document.querySelector("#todaySummary"),
   winRate: document.querySelector("#winRate"),
@@ -85,10 +73,10 @@ const appState = {
 };
 
 const archive = createArchive({
-  dialog: elements.archiveDialog,
+  dialog: document.querySelector("#historyCalendar"),
   getSave: () => appState.save,
   getToday: () => appState.todayKey,
-  onSelect: (dateKey) => startGame(dateKey),
+  onSelect: showDayDetails,
 });
 
 init().catch((error) => {
@@ -134,7 +122,8 @@ async function init() {
   );
 
   const archivedDate = params.get("archive");
-  startGame(isArchiveDate(archivedDate, appState.todayKey) ? archivedDate : appState.todayKey);
+  startGame();
+  if (isArchiveDate(archivedDate, appState.todayKey) && appState.access.archive) showDayDetails(archivedDate);
   document.body.classList.add("app-ready");
   registerServiceWorker();
 }
@@ -162,55 +151,49 @@ function attachEvents() {
   document.addEventListener("keydown", handlePhysicalKeyboard);
   document.addEventListener("visibilitychange", handleVisibilityChange);
   elements.helpButton.addEventListener("click", () => elements.helpDialog.showModal());
-  elements.statsButton.addEventListener("click", () => {
+  elements.menuButton.addEventListener("click", () => {
+    if (!appState.ready) return;
     renderStats();
-    elements.statsDialog.showModal();
+    archive.open(appState.todayKey);
+    elements.menuDialog.showModal();
+    elements.menuButton.setAttribute("aria-expanded", "true");
   });
+  elements.closeMenuButton.addEventListener("click", () => elements.menuDialog.close());
+  elements.menuDialog.addEventListener("close", () => elements.menuButton.setAttribute("aria-expanded", "false"));
   elements.shareButton.addEventListener("click", handleShare);
   elements.resultShareButton.addEventListener("click", handleShare);
   elements.keyboard.addEventListener("click", handleVirtualKeyboard);
   elements.exportButton.addEventListener("click", handleExport);
   elements.importFile.addEventListener("change", handleImport);
-  elements.archiveButton.addEventListener("click", () => {
-    if (!appState.ready) return;
-    if (!appState.access.archive) return showToast("The archive is included with Premium.");
-    archive.open(appState.puzzle.key);
-  });
-  elements.todayButton.addEventListener("click", () => startGame());
+
 }
 
-function startGame(dateKey = appState.todayKey) {
+function startGame() {
+  const dateKey = appState.todayKey;
   const switchingPuzzle = appState.ready;
-  if (dateKey !== appState.todayKey && (!appState.access.archive || !isArchiveDate(dateKey, appState.todayKey) || !archiveProgress(appState.save, dateKey)?.completed)) {
-    dateKey = appState.todayKey;
-  }
   clearTimeout(appState.winAnimationTimer);
   clearTimeout(appState.keyFlashTimer);
   clearTimeout(appState.toastTimer);
   elements.toast.hidden = true;
-  const isArchive = dateKey !== appState.todayKey;
   const puzzleData = selectPuzzleForDateKey(appState.answers, dateKey);
-  const progress = isArchive ? archiveProgress(appState.save, dateKey) : appState.save.puzzles[dateKey];
+  const progress = appState.save.puzzles[dateKey];
   appState.puzzle = {
     ...puzzleData,
     maxGuesses: getGuessAllowance(puzzleData.length, appState.access, progress),
     displayDate: formatDateKey(dateKey, TIME_ZONE),
     isPreview: compareDateKeys(dateKey, START_DATE) < 0,
-    isArchive,
     key: dateKey,
   };
   appState.ready = true;
 
-  if (!isArchive && !appState.save.puzzles[appState.puzzle.key]) {
+  if (!appState.save.puzzles[appState.puzzle.key]) {
     appState.save.puzzles[appState.puzzle.key] = createPuzzleProgress();
   }
   getProgress().maxGuesses = appState.puzzle.maxGuesses;
   persistSave();
   const url = new URL(window.location.href);
-  if (isArchive) url.searchParams.set("archive", dateKey);
-  else url.searchParams.delete("archive");
+  url.searchParams.delete("archive");
   window.history.replaceState(null, "", url);
-  elements.todayButton.hidden = !isArchive;
 
   renderTodaySummary();
   renderBoard();
@@ -242,7 +225,7 @@ function renderTodaySummary() {
   const puzzle = appState.puzzle;
   const dateLabel = formatTodaySummaryDate(puzzle.key);
   elements.todaySummary.innerHTML = [
-    `<span class="today-line">${puzzle.isArchive ? "Archive" : "Today"}: ${dateLabel}</span>`,
+    `<span class="today-line">Today: ${dateLabel}</span>`,
     `<span class="today-meta">${puzzle.length}-letter word | ${puzzle.maxGuesses} guesses</span>`,
   ].join("");
 }
@@ -263,7 +246,7 @@ function handlePhysicalKeyboard(event) {
     return;
   }
 
-  if (elements.helpDialog.open || elements.statsDialog.open || elements.archiveDialog.open) {
+  if (elements.helpDialog.open || elements.menuDialog.open || elements.dayDialog.open) {
     return;
   }
 
@@ -375,7 +358,7 @@ function submitGuess() {
   if (guess === puzzle.answer) {
     progress.completed = true;
     progress.won = true;
-    if (!puzzle.isPreview && !puzzle.isArchive) {
+    if (!puzzle.isPreview) {
       recordStats(appState.save, appState.puzzle.key, progress.guesses.length);
     }
   } else if (progress.guesses.length >= puzzle.maxGuesses) {
@@ -499,7 +482,7 @@ function renderResultPanel() {
   elements.resultPanel.hidden = false;
   elements.resultPanel.classList.toggle("won", progress.won);
   elements.resultPanel.classList.toggle("lost", !progress.won);
-  elements.resultLabel.textContent = progress.won ? "Solved" : appState.puzzle.isArchive ? "Archive word" : "Today’s word";
+  elements.resultLabel.textContent = progress.won ? "Solved" : "Today’s word";
   elements.resultWord.textContent = appState.puzzle.answer;
   elements.resultScore.textContent = result;
 
@@ -515,11 +498,6 @@ function renderShareState() {
 }
 
 function updateNextPuzzleCountdown() {
-  if (appState.puzzle?.isArchive) {
-    elements.nextPuzzleCountdown.textContent = "Archive results do not affect daily streaks.";
-    if (!appState.simulatedTodayKey && getDateKeyInTimeZone() !== appState.todayKey) window.location.reload();
-    return;
-  }
   if (appState.simulatedTodayKey) {
     elements.nextPuzzleCountdown.textContent = "Preview puzzle";
     return;
@@ -610,24 +588,16 @@ function renderStats() {
   const stats = appState.save.stats;
   const winRate = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
   const average = stats.wins ? (stats.totalWinningGuesses / stats.wins).toFixed(1) : "-";
-  const rangeText = buildCalendarRangeLabel(CALENDAR_WINDOW_DAYS);
 
   elements.winStreak.textContent = String(stats.currentStreak);
   elements.playStreak.textContent = String(stats.playStreak);
   elements.winRate.textContent = `${winRate}%`;
   elements.playedCount.textContent = String(stats.played);
-  elements.statsPlayed.textContent = String(stats.played);
   elements.statsWins.textContent = String(stats.wins);
-  elements.statsWinStreak.textContent = String(stats.currentStreak);
-  elements.statsPlayStreak.textContent = String(stats.playStreak);
   elements.statsMaxStreak.textContent = String(stats.maxStreak);
   elements.statsAverage.textContent = average;
-  elements.calendarRangeLabel.textContent = rangeText;
-  elements.statsCalendarRangeLabel.textContent = rangeText;
 
   renderDistribution(stats.distribution);
-  renderActivityCalendar(elements.streakCalendar, CALENDAR_WINDOW_DAYS);
-  renderActivityCalendar(elements.statsCalendar, CALENDAR_WINDOW_DAYS);
 }
 
 function renderDistribution(distribution) {
@@ -658,44 +628,43 @@ function renderDistribution(distribution) {
   }
 }
 
-function renderActivityCalendar(container, totalDays) {
-  container.innerHTML = "";
-
-  const weekdays = document.createElement("div");
-  weekdays.className = "calendar-weekdays";
-  WEEKDAY_LABELS.forEach((label) => {
-    const cell = document.createElement("div");
-    cell.className = "weekday";
-    cell.textContent = label;
-    weekdays.appendChild(cell);
-  });
-  container.appendChild(weekdays);
-
-  const grid = document.createElement("div");
-  grid.className = "calendar-grid";
-
-  const startDateKey = shiftDateKey(appState.todayKey, -(totalDays - 1));
-
-  for (let offset = 0; offset < totalDays; offset += 1) {
-    const dateKey = shiftDateKey(startDateKey, offset);
-    const cell = document.createElement("div");
-    const state = getDayState(dateKey);
-
-    cell.className = `day-cell ${state.type}`;
-    cell.dataset.date = dateKey;
-    cell.textContent = String(Number(dateKey.slice(-2)));
-    if (state.intensity !== null) {
-      cell.style.setProperty("--win-strength", String(state.intensity));
+function showDayDetails(dateKey) {
+  if (!appState.access.archive) return showToast("Game history is included with Premium.");
+  if (!isArchiveDate(dateKey, appState.todayKey) && dateKey !== appState.todayKey) return;
+  const progress = archiveProgress(appState.save, dateKey) ?? appState.save.puzzles[dateKey];
+  const puzzle = selectPuzzleForDateKey(appState.answers, dateKey);
+  document.querySelector("#dayTitle").textContent = formatDateKey(dateKey, TIME_ZONE);
+  document.querySelector("#dayStatus").textContent = progress?.completed
+    ? progress.won ? `Solved in ${progress.guesses.length}/${progress.maxGuesses ?? puzzle.maxGuesses} guesses.` : "Not solved."
+    : progress?.guesses.length || progress?.currentGuess ? "Unfinished. Past puzzles cannot be resumed."
+    : dateKey === appState.todayKey ? "Today's puzzle is ready to play." : "Not played. Missed puzzles cannot be played.";
+  document.querySelector("#dayWord").textContent = progress?.completed && progress.won ? puzzle.answer : "";
+  const board = document.querySelector("#dayGuesses");
+  board.replaceChildren();
+  if (progress?.completed) {
+    for (const guess of progress.guesses) {
+      const row = document.createElement("div");
+      row.className = "board-row";
+      row.style.setProperty("--word-length", String(puzzle.length));
+      const statuses = evaluateGuess(guess, puzzle.answer);
+      [...guess].forEach((letter, index) => {
+        const tile = document.createElement("div");
+        tile.className = `tile filled ${statuses[index]}`;
+        tile.setAttribute("aria-label", `${letter}: ${STATUS_LABEL[statuses[index]]}`);
+        const symbol = document.createElement("span");
+        symbol.className = "tile-symbol";
+        symbol.textContent = STATUS_SYMBOL[statuses[index]];
+        symbol.setAttribute("aria-hidden", "true");
+        const text = document.createElement("span");
+        text.className = "tile-letter";
+        text.textContent = letter;
+        tile.append(symbol, text);
+        row.append(tile);
+      });
+      board.append(row);
     }
-    if (state.isToday) {
-      cell.classList.add("today");
-    }
-    cell.title = `${formatDateKey(dateKey, TIME_ZONE)}: ${describeDayState(state)}`;
-
-    grid.appendChild(cell);
   }
-
-  container.appendChild(grid);
+  elements.dayDialog.showModal();
 }
 
 function handleShare() {
@@ -753,73 +722,8 @@ function shakeBoard() {
   elements.board.classList.add("shake");
 }
 
-function buildCalendarRangeLabel(totalDays) {
-  const start = shiftDateKey(appState.todayKey, -(totalDays - 1));
-  return `${formatDateKey(start, TIME_ZONE)} to ${formatDateKey(appState.todayKey, TIME_ZONE)}`;
-}
-
-function getDayState(dateKey) {
-  if (compareDateKeys(dateKey, START_DATE) < 0) {
-    return { intensity: null, isToday: dateKey === appState.todayKey, type: "empty" };
-  }
-
-  if (compareDateKeys(dateKey, appState.todayKey) > 0) {
-    return { intensity: null, isToday: false, type: "empty" };
-  }
-
-  const progress = appState.save.puzzles[dateKey];
-  if (progress?.completed) {
-    if (progress.won) {
-      return {
-        intensity: getWinIntensity(dateKey, progress.guesses.length),
-        guessesText: `${progress.guesses.length}/${progress.maxGuesses ?? selectPuzzleForDateKey(appState.answers, dateKey).maxGuesses}`,
-        isToday: dateKey === appState.todayKey,
-        type: "won",
-      };
-    }
-
-    return { intensity: null, isToday: dateKey === appState.todayKey, type: "lost" };
-  }
-
-  if (dateKey === appState.todayKey) {
-    return { intensity: null, isToday: true, type: "today" };
-  }
-
-  return { intensity: null, isToday: false, type: "missed" };
-}
-
-function describeDayState(state) {
-  switch (state.type) {
-    case "won":
-      return `Won in ${state.guessesText ?? "?"}`;
-    case "lost":
-      return "Lost";
-    case "missed":
-      return "Missed";
-    case "today":
-      return "Today";
-    default:
-      return "No puzzle";
-  }
-}
-
-function getWinIntensity(dateKey, guessCount) {
-  if (!appState.answers.length) {
-    return 0.5;
-  }
-
-  const puzzle = selectPuzzleForDateKey(appState.answers, dateKey);
-  puzzle.maxGuesses = appState.save.puzzles[dateKey]?.maxGuesses ?? puzzle.maxGuesses;
-  if (puzzle.maxGuesses <= 1) {
-    return 1;
-  }
-
-  const normalized = (puzzle.maxGuesses - guessCount) / (puzzle.maxGuesses - 1);
-  return Math.max(0.08, Math.min(1, normalized));
-}
-
 function getProgress() {
-  return appState.puzzle.isArchive ? archiveProgress(appState.save, appState.puzzle.key) : appState.save.puzzles[appState.puzzle.key];
+  return appState.save.puzzles[appState.puzzle.key];
 }
 
 function persistSave() {

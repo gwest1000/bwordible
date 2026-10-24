@@ -39,8 +39,9 @@ Only the runtime files in `dist/` are published.
 
 ## Moving progress
 
-Open **Stats → Export progress** on the existing website. Save the JSON file,
-then select it under **Stats → Import progress backup** in the Android app.
+Open **Menu → Move or back up progress → Export progress** on the existing
+website. Save the JSON file, then select it under **Import progress backup**
+in the same menu in the Android app.
 Completed games already on the destination are kept. Reimporting a backup does
 not double-count games. Backups contain game history, never subscription rights.
 Android export opens the system share sheet; choose a file destination.
@@ -49,19 +50,23 @@ version can still be imported without removing archive history.
 
 ## Puzzle archive
 
-Choose **Archive**, then a completed past game beginning March 1, 2026. Month
-arrows navigate the calendar. Missed, unfinished, future and today's puzzles
-cannot be selected. The archive is view-only; completed daily games and previously
-completed archive games are displayed without changing their results.
+Open the hamburger menu for help, statistics, and the streak calendar. Month
+arrows navigate dates beginning March 1, 2026. Tap a date for its status and,
+for a completed game, the saved guesses. The answer is shown for solved games.
+Missed and unfinished days show their status and cannot be played or resumed.
+Future dates cannot be selected.
 
 Saved history survives reloads and offline use. The calendar shows solved and
-unsolved completed games, plus separate totals for previously played archive games.
-Archive results never change daily statistics, win streaks, or play streaks.
-Shares are marked **Archive**. **Back to today** restores the current daily game.
-The archive is included in the current test build; its access check will use
+unsolved completed games. Day details open over the menu, keeping today's game
+intact. History never changes daily statistics, win streaks, or play streaks.
+History is included in the current test build; its access check will use
 verified Premium/trial entitlements when billing is connected.
 The `today` date override is available only in a local browser preview, never in
 the Android app or published website.
+
+For an interactive phone-sized preview in Codex, run the app server and open
+`phone-preview.html`. This development-only page is excluded from Android and
+Pages builds; it embeds the same game layout in a 390px-wide frame.
 
 ## Android testing
 

@@ -24,7 +24,8 @@ test("exports saved games and imports them on a fresh browser", async ({ page, b
   const save = createDefaultSave();
   save.puzzles["2026-03-01"] = { ...createPuzzleProgress(), guesses: ["NOAH"], completed: true, won: true, statsRecorded: true };
   await page.goto("/?today=2026-03-02");
-  await page.getByRole("button", { name: "Stats", exact: true }).click();
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByText("Move or back up progress", { exact: true }).click();
   await page.locator("#importFile").setInputFiles({ name: "backup.json", mimeType: "application/json", buffer: Buffer.from(exportProgress(save)) });
   await expect(page.locator("#statsWins")).toHaveText("1");
   const downloadPromise = page.waitForEvent("download");
@@ -33,7 +34,8 @@ test("exports saved games and imports them on a fresh browser", async ({ page, b
   const other = await browser.newContext();
   const destination = await other.newPage();
   await destination.goto("http://127.0.0.1:4173/?today=2026-03-02");
-  await destination.getByRole("button", { name: "Stats", exact: true }).click();
+  await destination.getByRole("button", { name: "Open menu", exact: true }).click();
+  await destination.getByText("Move or back up progress", { exact: true }).click();
   await destination.locator("#importFile").setInputFiles(backup);
   await expect(destination.locator("#statsWins")).toHaveText("1");
   await destination.reload();
@@ -45,7 +47,8 @@ test("rejects an invalid file without changing saved progress", async ({ page })
   await page.goto("/?today=2026-03-02");
   await expect(page.locator(".board-row").first()).toBeVisible();
   const before = await page.evaluate(() => localStorage.getItem("bwordible-state-v2"));
-  await page.getByRole("button", { name: "Stats", exact: true }).click();
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByText("Move or back up progress", { exact: true }).click();
   await page.locator("#importFile").setInputFiles({ name: "invalid.json", mimeType: "application/json", buffer: Buffer.from('{"app":"Something else"}') });
   await expect(page.locator("#toast")).toContainText("not a valid MannaGrams");
   expect(await page.evaluate(() => localStorage.getItem("bwordible-state-v2"))).toBe(before);
