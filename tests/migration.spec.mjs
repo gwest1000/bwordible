@@ -28,6 +28,7 @@ test("exports saved games and imports them on a fresh browser", async ({ page, b
   await page.getByText("Move or back up progress", { exact: true }).click();
   await page.locator("#importFile").setInputFiles({ name: "backup.json", mimeType: "application/json", buffer: Buffer.from(exportProgress(save)) });
   await expect(page.locator("#statsWins")).toHaveText("1");
+  await expect(page.locator('#archiveGrid [data-date="2026-03-01"]')).toHaveClass(/won/);
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export progress" }).click();
   const backup = await (await downloadPromise).path();

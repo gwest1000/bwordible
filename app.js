@@ -598,6 +598,7 @@ function renderStats() {
   elements.statsAverage.textContent = average;
 
   renderDistribution(stats.distribution);
+  if (elements.menuDialog.open) archive.open(appState.todayKey);
 }
 
 function renderDistribution(distribution) {
