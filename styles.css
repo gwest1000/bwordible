@@ -144,7 +144,7 @@ body.app-ready .reveal-4 {
 }
 
 .brand-card h1 {
-  font-size: clamp(1.2rem, 5.8vw, 2rem);
+  font-size: clamp(1.3rem, 6.6vw, 2.2rem);
   line-height: 0.96;
   max-width: 100%;
   white-space: nowrap;
@@ -173,7 +173,7 @@ body.app-ready .reveal-4 {
 .brand-subtitle {
   grid-area: subtitle;
   color: var(--ink-soft);
-  font-size: clamp(0.62rem, 2.8vw, 0.78rem);
+  font-size: clamp(0.7rem, 3.2vw, 0.88rem);
   font-weight: 500;
   margin: 0;
 }
@@ -348,6 +348,7 @@ button:focus-visible {
 }
 
 #board .board-row { gap: var(--tile-gap); }
+#board:focus { outline: none; }
 #board .tile { width: var(--tile-size); height: var(--tile-size); container-type: inline-size; }
 #board .tile-letter { font-size: clamp(11px, 37cqi, 32px); }
 #board .tile-symbol { font-size: clamp(10px, 36cqi, 30px); }
@@ -1066,7 +1067,7 @@ button:focus-visible {
   }
 }
 
-.header-actions { grid-area: actions; display: flex; align-items: center; justify-content: flex-end; }
+.header-actions { grid-area: actions; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 .icon-button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; background: transparent; color: var(--ink); border-radius: 0.65rem; }
 .icon-button svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .menu-button svg { width: 30px; height: 30px; stroke-width: 2; }
@@ -1095,12 +1096,14 @@ button:focus-visible {
 .history-board { margin: auto; max-width: 360px; }
 .history-board:empty, #dayWord:empty { display: none; }
 #dayWord { font-family: var(--serif); letter-spacing: 0.08em; }
-body:has(.side-menu[open]), body:has(.modal[open]) { overflow: hidden; }
+body:has(.side-menu:modal), body:has(.modal[open]) { overflow: hidden; }
 @keyframes menu-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @media (max-width: 560px) { .side-menu { width: 100%; } }
 @media (max-width: 350px) {
-  .brand-lockup { grid-template-columns: 48px minmax(0, 1fr) auto; column-gap: 0.3rem; }
-  .brand-app-icon { width: 48px; height: 48px; }
+  .brand-lockup { grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 0.3rem; }
+  .brand-app-icon { width: 40px; height: 40px; }
+  .brand-subtitle { font-size: 0.65rem; }
+  .header-actions { gap: 6px; }
   .today-meta { font-size: 0.68rem; }
   .today-line { font-size: 0.64rem; }
 }
@@ -1113,6 +1116,13 @@ body:has(.side-menu[open]), body:has(.modal[open]) { overflow: hidden; }
   .board-card { align-self: start; }
 }
 @media (max-height: 650px) { .key { height: 44px; } }
+@media (min-width: 760px) and (min-height: 600px) {
+  .app-shell { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 1.25rem; max-width: 1240px; align-items: start; }
+  .side-menu[open] { position: sticky; inset: auto; top: max(0.6rem, env(safe-area-inset-top)); width: 100%; height: calc(100dvh - 1.2rem); max-height: calc(100dvh - 1.2rem); overflow-y: auto; border: 1px solid rgba(23, 37, 30, 0.1); border-radius: 1.2rem; animation: none; }
+  .menu-content { padding-inline: 1rem; }
+  .menu-heading h2 { font-size: 1.5rem; }
+  #menuButton, #closeMenuButton { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

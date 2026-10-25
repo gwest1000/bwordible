@@ -98,14 +98,19 @@ test("fits tablet and phone widths with stats inside a full-screen phone menu", 
     expect(fit.width).toBeLessThanOrEqual(width);
     expect(fit.boardTop).toBeLessThan(200);
     expect(fit.keyHeight).toBeGreaterThanOrEqual(44);
-    await page.getByRole("button", { name: "Open menu" }).click();
+    if (width < 760) await page.getByRole("button", { name: "Open menu" }).click();
     await expect(page.getByRole("button", { name: "How to play" })).toBeVisible();
     await expect(page.locator("#winStreak")).toBeVisible();
     const box = await page.locator("#menuDialog").boundingBox();
     if (width <= 560) expect(Math.round(box.width)).toBe(width);
-    await page.keyboard.press("Escape");
-    await expect(page.locator("#menuDialog")).not.toBeVisible();
-    await expect(page.locator("#menuButton")).toBeFocused();
+    if (width < 760) {
+      await page.keyboard.press("Escape");
+      await expect(page.locator("#menuDialog")).not.toBeVisible();
+      await expect(page.locator("#menuButton")).toBeFocused();
+    } else {
+      await expect(page.locator("#menuButton")).toBeHidden();
+      expect(await page.locator("#menuDialog").evaluate((e) => e.matches(":modal"))).toBe(false);
+    }
   }
 });
 

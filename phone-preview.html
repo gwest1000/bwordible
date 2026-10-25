@@ -20,6 +20,10 @@
 </select></label></p>
 <iframe src="./" title="MannaGrams interactive phone preview"></iframe>
 <script>
+  navigator.serviceWorker?.addEventListener("controllerchange", () => {
+    const frame = document.querySelector("iframe");
+    frame.src = frame.src;
+  });
   document.querySelector("#screenSize").addEventListener("change", (event) => {
     const [width, height] = event.target.value.split(",");
     const frame = document.querySelector("iframe");

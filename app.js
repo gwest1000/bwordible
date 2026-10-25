@@ -123,6 +123,9 @@ async function init() {
 
   const archivedDate = params.get("archive");
   startGame();
+  const sidebarLayout = window.matchMedia("(min-width: 760px) and (min-height: 600px)");
+  sidebarLayout.addEventListener("change", syncMenuPresentation);
+  syncMenuPresentation();
   const layoutObserver = new ResizeObserver(scheduleBoardFit);
   for (const selector of [".brand-card", ".keyboard-card", "#resultPanel"]) {
     layoutObserver.observe(document.querySelector(selector));
@@ -172,6 +175,27 @@ function attachEvents() {
   elements.exportButton.addEventListener("click", handleExport);
   elements.importFile.addEventListener("change", handleImport);
 
+}
+
+function syncMenuPresentation() {
+  const sidebar = window.matchMedia("(min-width: 760px) and (min-height: 600px)").matches;
+  const previousFocus = document.activeElement;
+  if (elements.menuDialog.open) elements.menuDialog.close();
+  if (sidebar) {
+    elements.menuDialog.setAttribute("role", "complementary");
+    archive.open(appState.todayKey);
+    elements.menuDialog.show();
+  } else {
+    elements.menuDialog.removeAttribute("role");
+  }
+  // Switching from a modal drawer must release its focus trap before gameplay resumes.
+  if (previousFocus === document.body || previousFocus === elements.menuButton ||
+      previousFocus === elements.closeMenuButton || !previousFocus?.getClientRects().length) {
+    elements.board.focus({ preventScroll: true });
+  } else {
+    previousFocus.focus({ preventScroll: true });
+  }
+  scheduleBoardFit();
 }
 
 function startGame() {
@@ -245,6 +269,7 @@ function handlePhysicalKeyboard(event) {
   if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) {
     return;
   }
+  if (event.target instanceof HTMLInputElement) return;
 
   if (
     event.target instanceof HTMLButtonElement &&
@@ -253,7 +278,7 @@ function handlePhysicalKeyboard(event) {
     return;
   }
 
-  if (elements.helpDialog.open || elements.menuDialog.open || elements.dayDialog.open) {
+  if (elements.helpDialog.open || elements.menuDialog.matches(":modal") || elements.dayDialog.open) {
     return;
   }
 

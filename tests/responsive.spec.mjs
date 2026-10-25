@@ -66,3 +66,30 @@ test("completion panel triggers a new fit and evaluated letters stay inside thei
   });
   expect(contained).toBe(true);
 });
+
+test("tablets show a permanent interactive sidebar and return to a phone drawer on resize", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 1280 });
+  await page.goto(`/?today=${dates[6]}`);
+  await expect(page.locator("#board .board-row")).toHaveCount(8);
+  await expect(page.locator("#menuDialog")).toBeVisible();
+  await expect(page.locator("#menuButton")).toBeHidden();
+  const game = await page.locator(".layout").boundingBox();
+  const sidebar = await page.locator("#menuDialog").boundingBox();
+  expect(sidebar.x).toBeGreaterThan(game.x + game.width);
+  expect(await page.locator("#menuDialog").evaluate((e) => e.matches(":modal"))).toBe(false);
+  await page.keyboard.type("A");
+  await expect(page.locator("#board .tile-letter")).toHaveText(["A"]);
+  await page.getByRole("button", { name: "How to play" }).click();
+  await expect(page.locator("#helpDialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator("#menuDialog")).not.toBeVisible();
+  await page.getByRole("button", { name: "Open menu" }).click();
+  await expect(page.locator("#menuDialog")).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect.poll(() => page.locator("#menuDialog").evaluate((e) => e.open && !e.matches(":modal"))).toBe(true);
+  await page.locator("#board").focus();
+  await page.keyboard.type("B");
+  await expect(page.locator("#board .tile-letter")).toHaveText(["A", "B"]);
+  await expect.poll(() => fitsViewport(page, 800)).toBe(true);
+});

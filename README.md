@@ -73,6 +73,9 @@ The compact header shows the date at the top right and the word length/guess
 allowance below the subtitle. Grid squares adapt to available width and height,
 including after rotation or completion. Tablet tiles are capped to avoid
 oversized squares. Short landscape phones place the keyboard beside the grid.
+At widths of at least 760px and heights of at least 600px, help, stats and the
+calendar stay visible in a sidebar beside the game. Narrower or shorter windows
+use the slide-out menu, including when a tablet switches to a narrow split view.
 Keys remain at least 44px tall and tiles at least 32px; exceptionally short or
 zoomed views can scroll rather than shrinking below these limits.
 
